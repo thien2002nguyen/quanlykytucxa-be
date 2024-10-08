@@ -1,0 +1,58 @@
+openapi: 3.0.0
+info:
+  title: News API
+  version: 1.0.0
+paths:
+  /news:
+    post:
+      summary: Create a new news article
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: Title of the news article
+                  example: 'Breaking News'
+                content:
+                  type: string
+                  description: Detailed content of the news article
+                  example: 'Here is the detailed content of the news article.'
+                summary:
+                  type: string
+                  description: Brief summary of the news article
+                  example: 'This is a brief summary.'
+                author:
+                  type: string
+                  description: Author of the news article
+                  example: 'John Doe'
+                publishDate:
+                  type: string
+                  format: date-time
+                  description: Date and time when the news article was published
+                  example: '2024-09-16T12:00:00Z'
+                category:
+                  type: string
+                  description: Category or type of the news article
+                  example: 'Technology'
+                image:
+                  type: string
+                  format: uri
+                  description: URL or path to the image representing the news article
+                  example: 'http://example.com/image.jpg'
+                tags:
+                  type: array
+                  items:
+                    type: string
+                  description: Keywords or tags related to the news article
+                  example:
+                    - 'breaking'
+                    - 'technology'
+      responses:
+        '201':
+          description: News article created successfully
+        '400':
+          description: Bad request

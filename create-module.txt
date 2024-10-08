@@ -1,0 +1,3 @@
+nest generate module <module-name> --no-spec
+nest generate controller <controller-name> --no-spec
+nest generate service <service-name> --no-spec

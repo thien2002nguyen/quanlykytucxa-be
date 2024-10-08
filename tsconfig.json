@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "ES2021",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "incremental": true,
+    "skipLibCheck": true,
+    "strict": true, // Bật tất cả các tùy chọn nghiêm ngặt
+    "strictNullChecks": false, // Kiểm tra giá trị null và undefined
+    "noImplicitAny": true, // Cấm kiểu any ngầm định
+    "strictBindCallApply": true, // Kiểm tra các tham số cho bind, call và apply
+    "forceConsistentCasingInFileNames": true, // Bắt buộc sử dụng casing nhất quán trong tên file
+    "noFallthroughCasesInSwitch": true // Cấm các trường hợp rơi qua trong switch case
+  }
+}
