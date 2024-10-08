@@ -13,6 +13,7 @@ import { MetaPagination } from 'src/config/constant';
 import { buildSearchQuery } from 'src/utils/search.utils';
 import { paginateQuery } from 'src/utils/pagination.utils';
 import { getSortOptions } from 'src/utils/sort.utils';
+import { ResponseInterface } from 'src/interfaces/response.interface';
 
 @Injectable()
 export class StudentsService {
@@ -153,12 +154,18 @@ export class StudentsService {
     return student;
   }
 
-  async removeStudent(id: string): Promise<void> {
+  async removeStudent(id: string): Promise<ResponseInterface> {
     // Xóa sinh viên theo ID
     const result = await this.studentModel.findByIdAndDelete(id);
     if (!result) {
       // Nếu không tìm thấy, ném ra lỗi không tìm thấy
       throw new NotFoundException(`Không tìm thấy sinh viên với ID ${id}`);
     }
+
+    return {
+      statusCode: HttpStatus.ACCEPTED,
+      message: `Sinh viên với ID ${id} đã được xóa thành công.`,
+      messageCode: 'DELETE_SUCCESS',
+    };
   }
 }

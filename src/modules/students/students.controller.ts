@@ -24,6 +24,7 @@ import { StudentsService } from './students.service';
 import { Student } from './interfaces/students.interface';
 import { MetaPagination } from 'src/config/constant';
 import { AuthGuard } from 'src/guards/auth.guard';
+import { ResponseInterface } from 'src/interfaces/response.interface';
 
 @ApiBearerAuth()
 @ApiTags('students')
@@ -50,6 +51,7 @@ export class StudentsController {
   }
 
   @Get()
+  @UseGuards(AuthGuard)
   @ApiOperation({
     summary: 'Lấy danh sách sinh viên với phân trang và tìm kiếm',
   })
@@ -95,6 +97,7 @@ export class StudentsController {
   }
 
   @Get('/all')
+  @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Lấy danh sách tất cả sinh viên' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Danh sách sinh viên.' })
   async findAllStudents(): Promise<{ data: Student[] }> {
@@ -148,7 +151,7 @@ export class StudentsController {
     status: HttpStatus.NOT_FOUND,
     description: 'Không tìm thấy sinh viên.',
   })
-  async removeStudent(@Param('id') id: string): Promise<void> {
+  async removeStudent(@Param('id') id: string): Promise<ResponseInterface> {
     return this.studentsService.removeStudent(id);
   }
 }

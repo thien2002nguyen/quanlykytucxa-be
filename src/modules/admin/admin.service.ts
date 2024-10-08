@@ -1,4 +1,4 @@
-import { ResponseInterface } from './../../interfaces/response.interface';
+import { ResponseInterface } from '../../interfaces/response.interface';
 import {
   BadRequestException,
   HttpStatus,
@@ -20,6 +20,7 @@ import { MetaPagination } from 'src/config/constant';
 import { buildSearchQuery } from 'src/utils/search.utils';
 import { paginateQuery } from 'src/utils/pagination.utils';
 import { getSortOptions } from 'src/utils/sort.utils';
+import { UpdateAdminDto } from './dto/update-admin.dto';
 
 @Injectable()
 export class AdminService {
@@ -232,6 +233,44 @@ export class AdminService {
       statusCode: HttpStatus.CREATED,
       message: 'Tất cả tài khoản admin mẫu đã được thêm thành công.',
       messageCode: 'INSERT_SUCCESS',
+    };
+  }
+
+  async updateAdmin(
+    id: string,
+    updateAdminDto: UpdateAdminDto,
+  ): Promise<Admin> {
+    // Kiểm tra xem có trường password trong DTO hay không
+    if (updateAdminDto.password) {
+      updateAdminDto.password = await bcrypt.hash(updateAdminDto.password, 10);
+    }
+
+    // Cập nhật thông tin quản trị viên theo ID và DTO
+    const admin = await this.adminModel
+      .findByIdAndUpdate(id, updateAdminDto, {
+        new: true,
+      })
+      .select('-password -refreshToken');
+
+    if (!admin) {
+      // Nếu không tìm thấy, ném ra lỗi không tìm thấy
+      throw new NotFoundException(`Không tìm thấy quản trị viên với ID ${id}`);
+    }
+    return admin;
+  }
+
+  async removeAdmin(id: string): Promise<ResponseInterface> {
+    // Xóa quản trị viên theo ID
+    const result = await this.adminModel.findByIdAndDelete(id);
+    if (!result) {
+      // Nếu không tìm thấy, ném ra lỗi không tìm thấy
+      throw new NotFoundException(`Không tìm thấy quản trị viên với ID ${id}`);
+    }
+
+    return {
+      statusCode: HttpStatus.ACCEPTED,
+      message: `Quản trị viên với ID ${id} đã được xóa thành công.`,
+      messageCode: 'DELETE_SUCCESS',
     };
   }
 }

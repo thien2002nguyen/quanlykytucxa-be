@@ -29,7 +29,9 @@ export class AuthGuard implements CanActivate {
     }
 
     // Tìm admin trực tiếp từ database (MongoDB)
-    const admin = await this.adminModel.findById(payload.id).exec();
+    const admin = await this.adminModel
+      .findById(payload.id)
+      .select('-password -refreshToken');
     if (!admin) {
       throw new UnauthorizedException('Quản trị viên không tồn tại.');
     }

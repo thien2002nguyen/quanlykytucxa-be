@@ -17,6 +17,9 @@ export class Admin extends Document {
 
   @Prop()
   refreshToken: string;
+
+  @Prop()
+  avatar: string;
 }
 
 export const AdminSchema = SchemaFactory.createForClass(Admin);

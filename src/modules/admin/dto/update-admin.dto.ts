@@ -35,4 +35,12 @@ export class UpdateAdminDto extends PartialType(CreateAdminDto) {
   @IsOptional()
   @IsString()
   password?: string;
+
+  @ApiPropertyOptional({
+    description: 'Ảnh đại diện của quản trị viên',
+    example: 'image.png',
+  })
+  @IsOptional()
+  @IsString()
+  avatar?: string;
 }

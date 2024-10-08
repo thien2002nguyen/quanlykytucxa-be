@@ -1,3 +1,4 @@
+import { Request } from 'express';
 import { Document } from 'mongoose';
 
 export interface Admin extends Document {
@@ -6,6 +7,7 @@ export interface Admin extends Document {
   email: string;
   password: string;
   refreshToken?: string;
+  avatar?: string;
 }
 
 export interface TypeLogin {
@@ -18,4 +20,8 @@ export interface AdminAccount {
   phoneNumber: string;
   email: string;
   password: string;
+}
+
+export interface AdminRequest extends Request {
+  admin: Admin;
 }

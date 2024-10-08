@@ -1,4 +1,4 @@
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 export interface Student extends Document {
   studentId: string;
@@ -13,5 +13,6 @@ export interface Student extends Document {
   contactAddress: string;
   dateJoined: string;
   dateLeft: string;
-  roomId: string;
+  roomId?: Types.ObjectId;
+  avatar?: string;
 }

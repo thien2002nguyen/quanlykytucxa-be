@@ -2,11 +2,15 @@ import { AdminService } from './admin.service';
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
   HttpStatus,
   Param,
   Post,
+  Put,
   Query,
+  Req,
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
@@ -19,13 +23,14 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { CreateAdminDto } from './dto/create-admin.dto';
-import { Admin } from './interfaces/admin.interface';
+import { Admin, AdminRequest } from './interfaces/admin.interface';
 import { LoginAdminDto } from './dto/login-admin.dto';
 import { adminAccounts } from 'src/data/admin.accont';
 import { ResponseInterface } from 'src/interfaces/response.interface';
 import { AuthGuard } from 'src/guards/auth.guard';
 import { MetaPagination } from 'src/config/constant';
 import { RefreshTokenDto } from './dto/refreshToken-admin.dto';
+import { UpdateAdminDto } from './dto/update-admin.dto';
 
 @ApiBearerAuth()
 @ApiTags('admin')
@@ -149,6 +154,34 @@ export class AdminController {
     return { data: admins };
   }
 
+  @Get('auth-me')
+  @UseGuards(AuthGuard)
+  @ApiOperation({
+    summary: 'Lấy thông tin cá nhân của quản trị viên bằng access token',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Chi tiết quản trị viên.',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Không tìm thấy quản trị viên.',
+  })
+  async findAuthMe(@Req() request: AdminRequest): Promise<{ data: Admin }> {
+    // Lấy thông tin quản trị viên từ request (được đính kèm trong AuthGuard)
+    const admin = request.admin;
+
+    // Trả về thông tin quản trị viên
+    return { data: admin };
+  }
+
+  @Post('insert-admin/example')
+  @ApiExcludeEndpoint() // Để không hiển thị trong Swagger
+  async insertAdminsExample(): Promise<ResponseInterface> {
+    const response = await this.adminService.insertAdminsExample(adminAccounts);
+    return response;
+  }
+
   @Get(':id')
   @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Lấy thông tin quản trị viên theo ID' })
@@ -161,14 +194,42 @@ export class AdminController {
     description: 'Không tìm thấy quản trị viên.',
   })
   async findByIdAdmin(@Param('id') id: string): Promise<{ data: Admin }> {
-    const student = await this.adminService.findByIdAdmin(id);
-    return { data: student };
+    const admin = await this.adminService.findByIdAdmin(id);
+    return { data: admin };
   }
 
-  @Post('insert-admin/example')
-  @ApiExcludeEndpoint() // Để không hiển thị trong Swagger
-  async insertAdminsExample(): Promise<ResponseInterface> {
-    const response = await this.adminService.insertAdminsExample(adminAccounts);
-    return response;
+  @Put(':id')
+  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Cập nhật thông tin quản trị viên theo ID' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Chi tiết quản trị viên đã được cập nhật.',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Không tìm thấy quản trị viên.',
+  })
+  async updateAdmin(
+    @Param('id') id: string,
+    @Body() updateAdminDto: UpdateAdminDto,
+  ): Promise<{ data: Admin }> {
+    const admin = await this.adminService.updateAdmin(id, updateAdminDto);
+    return { data: admin };
+  }
+
+  @Delete(':id')
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Xóa quản trị viên theo ID' })
+  @ApiResponse({
+    status: HttpStatus.NO_CONTENT,
+    description: 'Quản trị viên đã được xóa thành công.',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Không tìm thấy quản trị viên.',
+  })
+  async removeAdmin(@Param('id') id: string): Promise<ResponseInterface> {
+    return this.adminService.removeAdmin(id);
   }
 }

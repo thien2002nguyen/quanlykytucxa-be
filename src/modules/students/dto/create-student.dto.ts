@@ -1,5 +1,12 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsEmail } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  IsNotEmpty,
+  IsString,
+  IsEmail,
+  IsOptional,
+  IsMongoId,
+} from 'class-validator';
+import { Types } from 'mongoose';
 
 export class CreateStudentDto {
   @ApiProperty({ description: 'Mã sinh viên', example: 'S12345' })
@@ -75,8 +82,19 @@ export class CreateStudentDto {
   @IsString()
   course: string;
 
-  @ApiProperty({ description: 'ID phòng của sinh viên', example: '101' })
-  @IsNotEmpty()
+  @ApiPropertyOptional({
+    description: 'ID phòng của sinh viên',
+    example: '64b6f0c4f62e8b1f12345678',
+  })
+  @IsOptional()
+  @IsMongoId()
+  roomId?: Types.ObjectId;
+
+  @ApiPropertyOptional({
+    description: 'Ảnh đại diện của sinh viên',
+    example: 'image.png',
+  })
+  @IsOptional()
   @IsString()
-  roomId: string;
+  avatar?: string;
 }

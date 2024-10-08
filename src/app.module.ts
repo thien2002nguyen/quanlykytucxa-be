@@ -5,6 +5,7 @@ import { DatabaseService } from './database/database.service';
 import { getMongoDbConfig } from './config/database.config';
 import { StudentsModule } from './modules/students/students.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { RoomsModule } from './modules/rooms/rooms.module';
 
 @Module({
   imports: [
@@ -15,8 +16,9 @@ import { AdminModule } from './modules/admin/admin.module';
       useFactory: async (configService: ConfigService) =>
         getMongoDbConfig(configService),
     }),
-    StudentsModule,
     AdminModule,
+    StudentsModule,
+    RoomsModule,
   ],
   providers: [DatabaseService],
 })
