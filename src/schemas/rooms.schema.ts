@@ -25,16 +25,10 @@ export class Room extends Document {
   @IsNumber()
   registeredCount: number;
 
-  @Prop({
-    default:
-      'https://www.cvent.com/sites/default/files/image/2021-10/hotel%20room%20with%20beachfront%20view.jpg',
-  })
+  @Prop()
   thumbnail: string;
 
-  @Prop({
-    default:
-      'https://www.cvent.com/sites/default/files/image/2021-10/hotel%20room%20with%20beachfront%20view.jpg',
-  })
+  @Prop()
   images: string[];
 
   @Prop({

@@ -15,4 +15,27 @@ export interface Student extends Document {
   dateLeft: string;
   roomId?: Types.ObjectId;
   avatar?: string;
+  password?: string;
+  refreshToken?: string;
+}
+
+export interface StudentAccount {
+  fullName: string;
+  studentId: string;
+  nationalIdCard: string;
+  phoneNumber: string;
+  email: string;
+  password: string;
+  course: string;
+  class: string;
+  faculty: string;
+  gender: string;
+  dateOfBirth: string;
+  contactAddress: string;
+  avatar?: string;
+  roomId?: string;
+}
+
+export interface StudentRequest extends Request {
+  student: Student;
 }

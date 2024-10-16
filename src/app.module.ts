@@ -6,6 +6,7 @@ import { getMongoDbConfig } from './config/database.config';
 import { StudentsModule } from './modules/students/students.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { RoomsModule } from './modules/rooms/rooms.module';
+import { UploadModule } from './modules/upload/upload.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { RoomsModule } from './modules/rooms/rooms.module';
     AdminModule,
     StudentsModule,
     RoomsModule,
+    UploadModule,
   ],
   providers: [DatabaseService],
 })

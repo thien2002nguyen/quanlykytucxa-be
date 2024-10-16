@@ -8,11 +8,7 @@ export interface Admin extends Document {
   password: string;
   refreshToken?: string;
   avatar?: string;
-}
-
-export interface TypeLogin {
-  userName: string;
-  password: string;
+  role: RoleAdmin;
 }
 
 export interface AdminAccount {
@@ -20,8 +16,14 @@ export interface AdminAccount {
   phoneNumber: string;
   email: string;
   password: string;
+  role: RoleAdmin;
 }
 
 export interface AdminRequest extends Request {
-  admin: Admin;
+  auth: Admin;
+}
+
+export enum RoleAdmin {
+  MODERATOR = 'MODERATOR',
+  ADMIN = 'ADMIN',
 }

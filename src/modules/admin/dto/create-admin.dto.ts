@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsEmail, IsOptional } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsEmail,
+  IsOptional,
+  IsEnum,
+} from 'class-validator';
+import { RoleAdmin } from '../interfaces/admin.interface';
 
 export class CreateAdminDto {
   @ApiProperty({
@@ -41,4 +48,12 @@ export class CreateAdminDto {
   @IsOptional()
   @IsString()
   avatar?: string;
+
+  @ApiProperty({
+    description: 'Vai trò của quản trị viên',
+    example: RoleAdmin.MODERATOR,
+    enum: RoleAdmin, // Cung cấp enum cho Swagger
+  })
+  @IsEnum(RoleAdmin) // Sử dụng IsEnum để validate role
+  role: RoleAdmin;
 }

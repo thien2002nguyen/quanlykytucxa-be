@@ -89,4 +89,12 @@ export class UpdateStudentDto extends PartialType(CreateStudentDto) {
   @IsOptional()
   @IsString()
   avatar?: string;
+
+  @ApiPropertyOptional({
+    description: 'Mật khẩu',
+    example: 'Password123!',
+  })
+  @IsOptional()
+  @IsString()
+  password: string;
 }

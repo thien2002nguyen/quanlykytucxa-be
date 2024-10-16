@@ -8,13 +8,13 @@ import { InjectModel } from '@nestjs/mongoose';
 import { isValidObjectId, Model, Types } from 'mongoose';
 import { Room } from './interfaces/room.interface';
 import { CreateRoomDto } from './dto/create-room.dto';
-import { MetaPagination } from 'src/config/constant';
 import { buildSearchQuery } from 'src/utils/search.utils';
 import { paginateQuery } from 'src/utils/pagination.utils';
 import { getSortOptions } from 'src/utils/sort.utils';
 import { generateSlug } from 'src/utils/slug.util';
 import { UpdateRoomDto } from './dto/update-room.dto';
 import { ResponseInterface } from 'src/interfaces/response.interface';
+import { MetaPagination } from 'src/common/constant';
 
 @Injectable()
 export class RoomsService {

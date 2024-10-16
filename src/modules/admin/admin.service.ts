@@ -8,19 +8,21 @@ import {
 } from '@nestjs/common';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import * as bcrypt from 'bcrypt';
-import { Admin, AdminAccount, TypeLogin } from './interfaces/admin.interface';
+import { Admin, AdminAccount } from './interfaces/admin.interface';
 import { InjectModel } from '@nestjs/mongoose';
 import { isValidObjectId, Model } from 'mongoose';
 import {
-  generateAccessTokens,
-  generateRefreshTokens,
-  verifyToken,
+  generateAccessAdminToken,
+  generateRefreshAdminToken,
+  verifyAdminToken,
 } from 'src/utils/tokenUtils';
-import { MetaPagination } from 'src/config/constant';
 import { buildSearchQuery } from 'src/utils/search.utils';
 import { paginateQuery } from 'src/utils/pagination.utils';
 import { getSortOptions } from 'src/utils/sort.utils';
 import { UpdateAdminDto } from './dto/update-admin.dto';
+import { parseExpiration } from 'src/utils/expirationUtils';
+import { TypeLogin } from 'src/interfaces/login.interfaces';
+import { MetaPagination } from 'src/common/constant';
 
 @Injectable()
 export class AdminService {
@@ -74,8 +76,12 @@ export class AdminService {
 
   async login({ userName, password }: TypeLogin): Promise<{
     data: Admin;
-    accessToken: string;
-    refreshToken: string;
+    token: {
+      expiresIn: number; // Thời gian còn lại của accessToken
+      accessToken: string;
+      refreshToken: string;
+      refreshExpiresIn: number; // Thời gian còn lại của refreshToken
+    };
   }> {
     const admin = await this.adminModel.findOne({
       $or: [{ email: userName }, { phoneNumber: userName }],
@@ -101,8 +107,14 @@ export class AdminService {
     }
 
     // Tạo access token và refresh token
-    const accessToken = generateAccessTokens(admin._id.toString());
-    const refreshToken = generateRefreshTokens(admin._id.toString());
+    const accessToken = generateAccessAdminToken(
+      admin._id.toString(),
+      admin.role,
+    );
+    const refreshToken = generateRefreshAdminToken(
+      admin._id.toString(),
+      admin.role,
+    );
 
     // Lưu refresh token vào cơ sở dữ liệu
     admin.refreshToken = refreshToken;
@@ -113,28 +125,44 @@ export class AdminService {
     delete adminData.password; // Xóa trường password
     delete adminData.refreshToken; // Xóa trường refreshToken
 
-    return { data: adminData, accessToken, refreshToken };
+    const ACCESS_TOKEN_EXPIRATION = parseExpiration(
+      process.env.ACCESS_TOKEN_EXPIRATION || '1d',
+    );
+    const REFRESH_TOKEN_EXPIRATION = parseExpiration(
+      process.env.REFRESH_TOKEN_EXPIRATION || '7d',
+    );
+
+    // Trả về thông tin admin cùng với token và expiresIn
+    return {
+      data: adminData,
+      token: {
+        accessToken,
+        refreshToken,
+        expiresIn: ACCESS_TOKEN_EXPIRATION, // Thời gian tồn tại của access token
+        refreshExpiresIn: REFRESH_TOKEN_EXPIRATION, // Thời gian tồn tại của refresh token
+      },
+    };
   }
 
-  async refreshAccessToken(refreshToken: string): Promise<{
+  async refreshAccessToken(refreshTokenAdminDto: string): Promise<{
     accessToken: string;
   }> {
-    // Kiểm tra tính hợp lệ của refreshToken
-    const decoded = verifyToken(refreshToken);
+    // Kiểm tra tính hợp lệ của refreshTokenAdminDto
+    const decoded = verifyAdminToken(refreshTokenAdminDto);
 
-    // Tìm admin dựa trên decoded thông tin (id) từ refreshToken
+    // Tìm admin dựa trên decoded thông tin (id) từ refreshTokenAdminDto
     const admin = await this.adminModel.findById(decoded.id);
     if (!admin) {
       throw new UnauthorizedException({
         statusCode: HttpStatus.UNAUTHORIZED,
         error: 'Unauthorized',
-        message: 'Không tìm thấy admin.',
+        message: 'Không tìm thấy quản trị viên.',
         messageCode: 'ADMIN_NOT_FOUND',
       });
     }
 
     // Kiểm tra xem refreshToken trong database có khớp không
-    if (admin.refreshToken !== refreshToken) {
+    if (admin.refreshToken !== refreshTokenAdminDto) {
       throw new UnauthorizedException({
         statusCode: HttpStatus.UNAUTHORIZED,
         error: 'Unauthorized',
@@ -144,7 +172,10 @@ export class AdminService {
     }
 
     // Tạo mới access token
-    const accessToken = generateAccessTokens(admin._id.toString());
+    const accessToken = generateAccessAdminToken(
+      admin._id.toString(),
+      admin.role,
+    );
 
     return { accessToken };
   }
@@ -223,6 +254,7 @@ export class AdminService {
         phoneNumber: admin.phoneNumber,
         email: admin.email,
         password: hashedPassword,
+        role: admin.role,
       });
     });
 

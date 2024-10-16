@@ -1,7 +1,8 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { CreateAdminDto } from './create-admin.dto';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, IsEmail } from 'class-validator';
+import { IsOptional, IsString, IsEmail, IsEnum } from 'class-validator';
+import { RoleAdmin } from '../interfaces/admin.interface';
 
 export class UpdateAdminDto extends PartialType(CreateAdminDto) {
   @ApiPropertyOptional({
@@ -43,4 +44,13 @@ export class UpdateAdminDto extends PartialType(CreateAdminDto) {
   @IsOptional()
   @IsString()
   avatar?: string;
+
+  @ApiPropertyOptional({
+    description: 'Vai trò của quản trị viên',
+    example: RoleAdmin.MODERATOR,
+    enum: RoleAdmin, // Cung cấp enum cho Swagger
+  })
+  @IsOptional()
+  @IsEnum(RoleAdmin) // Sử dụng IsEnum để validate role
+  role?: RoleAdmin;
 }

@@ -1,5 +1,6 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
+import { RoleAdmin } from 'src/modules/admin/interfaces/admin.interface';
 
 @Schema({ timestamps: true })
 export class Admin extends Document {
@@ -20,6 +21,9 @@ export class Admin extends Document {
 
   @Prop()
   avatar: string;
+
+  @Prop({ required: true, default: RoleAdmin.MODERATOR })
+  role: RoleAdmin;
 }
 
 export const AdminSchema = SchemaFactory.createForClass(Admin);

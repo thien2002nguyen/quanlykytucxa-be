@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty } from 'class-validator';
 
-export class RefreshTokenAdminDto {
+export class RefreshTokenStudentDto {
   @ApiProperty({
     description: 'Lấy lại access token từ refresh token',
     example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',

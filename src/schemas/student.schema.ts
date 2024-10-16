@@ -41,6 +41,12 @@ export class Student extends Document {
 
   @Prop()
   avatar: string;
+
+  @Prop({ required: true })
+  password: string;
+
+  @Prop()
+  refreshToken: string;
 }
 
 export const StudentSchema = SchemaFactory.createForClass(Student);

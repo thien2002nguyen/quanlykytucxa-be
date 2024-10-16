@@ -10,6 +10,8 @@ import {
   HttpStatus,
   Query,
   UseGuards,
+  Req,
+  UnauthorizedException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -17,14 +19,19 @@ import {
   ApiResponse,
   ApiQuery,
   ApiBearerAuth,
+  ApiExcludeEndpoint,
 } from '@nestjs/swagger';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
 import { StudentsService } from './students.service';
-import { Student } from './interfaces/students.interface';
-import { MetaPagination } from 'src/config/constant';
-import { AuthGuard } from 'src/guards/auth.guard';
+import { Student, StudentRequest } from './interfaces/students.interface';
+import { AuthModeratorOrAdminGuard } from 'src/guards/moderatorOrAdminAuth.guard';
 import { ResponseInterface } from 'src/interfaces/response.interface';
+import { StudentAuthGuard } from 'src/guards/studentAuth.guard';
+import { LoginStudentDto } from './dto/login-student.dto';
+import { RefreshTokenStudentDto } from './dto/refreshToken-student.dto';
+import { studentAccounts } from 'src/data/student.accont';
+import { MetaPagination } from 'src/common/constant';
 
 @ApiBearerAuth()
 @ApiTags('students')
@@ -33,7 +40,7 @@ export class StudentsController {
   constructor(private readonly studentsService: StudentsService) {}
 
   @Post()
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthModeratorOrAdminGuard)
   @ApiOperation({ summary: 'Tạo sinh viên mới' })
   @ApiResponse({
     status: HttpStatus.CREATED,
@@ -50,8 +57,53 @@ export class StudentsController {
     return { data: student };
   }
 
+  @Post('login')
+  @ApiOperation({ summary: 'Đăng nhập sinh viên' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Đăng nhập thành công.',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Thông tin đăng nhập không chính xác.',
+  })
+  async login(@Body() loginDto: LoginStudentDto): Promise<{
+    data: Student;
+    token: {
+      expiresIn: number;
+      accessToken: string;
+      refreshToken: string;
+      refreshExpiresIn: number;
+    };
+  }> {
+    return await this.studentsService.login({
+      userName: loginDto.userName,
+      password: loginDto.password,
+    });
+  }
+
+  @Post('refresh-token')
+  @ApiOperation({ summary: 'Lấy lại access token từ refresh token' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Access token đã được tạo lại thành công.',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Refresh token không hợp lệ hoặc đã hết hạn.',
+  })
+  async refreshToken(@Body() refreshTokenStudentDto: RefreshTokenStudentDto) {
+    if (!refreshTokenStudentDto) {
+      throw new UnauthorizedException('Yêu cầu refresh token');
+    }
+
+    return this.studentsService.refreshAccessToken(
+      refreshTokenStudentDto.refreshToken,
+    );
+  }
+
   @Get()
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthModeratorOrAdminGuard)
   @ApiOperation({
     summary: 'Lấy danh sách sinh viên với phân trang và tìm kiếm',
   })
@@ -96,13 +148,40 @@ export class StudentsController {
     return { data, meta };
   }
 
+  @Get('auth-me')
+  @UseGuards(StudentAuthGuard)
+  @ApiOperation({
+    summary: 'Lấy thông tin cá nhân của sinh viên bằng access token',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Chi tiết sinh viên.',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Không tìm thấy sinh viên.',
+  })
+  async findAuthMe(@Req() request: StudentRequest): Promise<{ data: Student }> {
+    const student = request.student;
+
+    return { data: student };
+  }
+
   @Get('/all')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthModeratorOrAdminGuard)
   @ApiOperation({ summary: 'Lấy danh sách tất cả sinh viên' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Danh sách sinh viên.' })
   async findAllStudents(): Promise<{ data: Student[] }> {
     const students = await this.studentsService.findAllStudents();
     return { data: students };
+  }
+
+  @Post('insert-students/example')
+  @ApiExcludeEndpoint() // Để không hiển thị trong Swagger
+  async insertStudentsExample(): Promise<ResponseInterface> {
+    const response =
+      await this.studentsService.insertStudentsExample(studentAccounts);
+    return response;
   }
 
   @Get(':id')
@@ -118,7 +197,7 @@ export class StudentsController {
   }
 
   @Put(':id')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthModeratorOrAdminGuard)
   @ApiOperation({ summary: 'Cập nhật thông tin sinh viên theo ID' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -140,7 +219,7 @@ export class StudentsController {
   }
 
   @Delete(':id')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthModeratorOrAdminGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Xóa sinh viên theo ID' })
   @ApiResponse({

@@ -6,13 +6,13 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Admin } from 'src/schemas/admin.schema'; // Đảm bảo đúng đường dẫn
-import { verifyToken } from 'src/utils/tokenUtils';
+import { Student } from 'src/schemas/student.schema';
+import { verifyAdminToken } from 'src/utils/tokenUtils';
 
 @Injectable()
-export class AuthGuard implements CanActivate {
+export class StudentAuthGuard implements CanActivate {
   constructor(
-    @InjectModel('Admin') private readonly adminModel: Model<Admin>,
+    @InjectModel('Student') private readonly studentModel: Model<Student>,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -23,21 +23,21 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException('Không có token.');
     }
 
-    const payload = verifyToken(token);
+    const payload = verifyAdminToken(token);
     if (!payload) {
       throw new UnauthorizedException('Token không hợp lệ.');
     }
 
-    // Tìm admin trực tiếp từ database (MongoDB)
-    const admin = await this.adminModel
+    // Tìm trong bảng student trực tiếp từ database (MongoDB)
+    const student = await this.studentModel
       .findById(payload.id)
       .select('-password -refreshToken');
-    if (!admin) {
-      throw new UnauthorizedException('Quản trị viên không tồn tại.');
+    if (!student) {
+      throw new UnauthorizedException('Sinh viên không tồn tại.');
     }
 
-    // Đính kèm thông tin admin vào request để sử dụng trong controller nếu cần
-    request.admin = admin;
+    // Đính kèm thông tin sinh viên vào request để sử dụng trong controller nếu cần
+    request.student = student;
 
     return true;
   }

@@ -97,4 +97,12 @@ export class CreateStudentDto {
   @IsOptional()
   @IsString()
   avatar?: string;
+
+  @ApiProperty({
+    description: 'Mật khẩu',
+    example: 'Password123!',
+  })
+  @IsOptional()
+  @IsString()
+  password?: string;
 }

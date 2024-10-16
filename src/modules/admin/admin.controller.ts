@@ -27,10 +27,10 @@ import { Admin, AdminRequest } from './interfaces/admin.interface';
 import { LoginAdminDto } from './dto/login-admin.dto';
 import { adminAccounts } from 'src/data/admin.accont';
 import { ResponseInterface } from 'src/interfaces/response.interface';
-import { AuthGuard } from 'src/guards/auth.guard';
-import { MetaPagination } from 'src/config/constant';
-import { RefreshTokenDto } from './dto/refreshToken-admin.dto';
+import { AuthAdminGuard } from 'src/guards/adminAuth.guard';
+import { RefreshTokenAdminDto } from './dto/refreshToken-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
+import { MetaPagination } from 'src/common/constant';
 
 @ApiBearerAuth()
 @ApiTags('admin')
@@ -39,8 +39,8 @@ export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
   @Post()
-  @UseGuards(AuthGuard) // Kiểm tra có phải admin hay không
-  @ApiOperation({ summary: 'Tạo quản trị viên mới' })
+  @UseGuards(AuthAdminGuard) // Kiểm tra có phải admin hay không
+  @ApiOperation({ summary: 'Tạo quản trị viên mới - ADMIN or MODERATOR' })
   @ApiResponse({
     status: HttpStatus.CREATED,
     description: 'Quản trị viên đã được tạo thành công.',
@@ -66,9 +66,15 @@ export class AdminController {
     status: HttpStatus.BAD_REQUEST,
     description: 'Thông tin đăng nhập không chính xác.',
   })
-  async login(
-    @Body() loginDto: LoginAdminDto,
-  ): Promise<{ data: Admin; accessToken: string; refreshToken: string }> {
+  async login(@Body() loginDto: LoginAdminDto): Promise<{
+    data: Admin;
+    token: {
+      expiresIn: number;
+      accessToken: string;
+      refreshToken: string;
+      refreshExpiresIn: number;
+    };
+  }> {
     return await this.adminService.login({
       userName: loginDto.userName,
       password: loginDto.password,
@@ -85,16 +91,18 @@ export class AdminController {
     status: HttpStatus.UNAUTHORIZED,
     description: 'Refresh token không hợp lệ hoặc đã hết hạn.',
   })
-  async refreshToken(@Body() refreshTokenDto: RefreshTokenDto) {
-    if (!refreshTokenDto) {
+  async refreshToken(@Body() refreshTokenAdminDto: RefreshTokenAdminDto) {
+    if (!refreshTokenAdminDto) {
       throw new UnauthorizedException('Yêu cầu refresh token');
     }
 
-    return this.adminService.refreshAccessToken(refreshTokenDto.refreshToken);
+    return this.adminService.refreshAccessToken(
+      refreshTokenAdminDto.refreshToken,
+    );
   }
 
   @Get()
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthAdminGuard)
   @ApiOperation({
     summary: 'Lấy danh sách quản trị viên với phân trang và tìm kiếm',
   })
@@ -143,7 +151,7 @@ export class AdminController {
   }
 
   @Get('/all')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthAdminGuard)
   @ApiOperation({ summary: 'Lấy danh sách tất cả quản trị viên' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -155,7 +163,7 @@ export class AdminController {
   }
 
   @Get('auth-me')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthAdminGuard)
   @ApiOperation({
     summary: 'Lấy thông tin cá nhân của quản trị viên bằng access token',
   })
@@ -168,11 +176,11 @@ export class AdminController {
     description: 'Không tìm thấy quản trị viên.',
   })
   async findAuthMe(@Req() request: AdminRequest): Promise<{ data: Admin }> {
-    // Lấy thông tin quản trị viên từ request (được đính kèm trong AuthGuard)
-    const admin = request.admin;
+    // Lấy thông tin quản trị viên từ request (được đính kèm trong AuthAdminGuard)
+    const auth = request.auth;
 
     // Trả về thông tin quản trị viên
-    return { data: admin };
+    return { data: auth };
   }
 
   @Post('insert-admin/example')
@@ -183,7 +191,7 @@ export class AdminController {
   }
 
   @Get(':id')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthAdminGuard)
   @ApiOperation({ summary: 'Lấy thông tin quản trị viên theo ID' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -199,7 +207,7 @@ export class AdminController {
   }
 
   @Put(':id')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthAdminGuard)
   @ApiOperation({ summary: 'Cập nhật thông tin quản trị viên theo ID' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -218,7 +226,7 @@ export class AdminController {
   }
 
   @Delete(':id')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthAdminGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Xóa quản trị viên theo ID' })
   @ApiResponse({

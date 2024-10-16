@@ -9,9 +9,9 @@ export class DatabaseService implements OnModuleInit {
   async onModuleInit() {
     try {
       await this.connection.asPromise(); // Chờ kết nối hoàn tất
-      console.log('Database connection successful');
+      console.log('Kết nối cơ sở dữ liệu thành công');
     } catch (error) {
-      console.error('Database connection failed', error);
+      console.error('Kết nối cơ sở dữ liệu thất bại', error);
     }
   }
 }

@@ -1,3 +1,4 @@
-nest generate module modules/rooms --no-spec
-nest generate controller modules/rooms --no-spec
-nest generate service modules/rooms --no-spec
+nest generate module modules/upload --no-spec
+nest generate controller modules/upload --no-spec
+nest generate service modules/upload --no-spec
+nest generate provider modules/upload --no-spec
