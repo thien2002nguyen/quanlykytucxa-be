@@ -210,7 +210,11 @@ export class AdminService {
 
     // Phân trang và sắp xếp
 
-    const admins = await query.skip(skip).limit(pageLimit).sort(sortOptions);
+    const admins = await query
+      .skip(skip)
+      .limit(pageLimit)
+      .sort(sortOptions)
+      .select('-password -refreshToken');
     const meta: MetaPagination = {
       page,
       limit: pageLimit,
@@ -232,7 +236,9 @@ export class AdminService {
     }
 
     // Tìm quản trị viên theo ID
-    const admin = await this.adminModel.findById(id);
+    const admin = await this.adminModel
+      .findById(id)
+      .select('-password -refreshToken');
     if (!admin) {
       // Nếu không tìm thấy, ném ra lỗi không tìm thấy
       throw new NotFoundException(

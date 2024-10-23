@@ -234,8 +234,11 @@ export class StudentsService {
     const total = await this.studentModel.countDocuments(searchQuery);
 
     // Phân trang và sắp xếp
-    const students = await query.skip(skip).limit(pageLimit).sort(sortOptions);
-
+    const students = await query
+      .skip(skip)
+      .limit(pageLimit)
+      .sort(sortOptions)
+      .select('-password -refreshToken');
     const meta: MetaPagination = {
       page,
       limit: pageLimit,
@@ -247,7 +250,7 @@ export class StudentsService {
 
   async findAllStudents(): Promise<Student[]> {
     // Lấy tất cả sinh viên từ cơ sở dữ liệu
-    return this.studentModel.find();
+    return this.studentModel.find().select('-password -refreshToken');
   }
 
   async findByIdStudent(id: string): Promise<Student> {
@@ -257,7 +260,9 @@ export class StudentsService {
     }
 
     // Tìm sinh viên theo ID
-    const student = await this.studentModel.findById(id);
+    const student = await this.studentModel
+      .findById(id)
+      .select('-password -refreshToken');
     if (!student) {
       // Nếu không tìm thấy, ném ra lỗi không tìm thấy
       throw new NotFoundException(`Không tìm thấy sinh viên với ID: ${id}`);
@@ -278,7 +283,7 @@ export class StudentsService {
         nationalIdCard: student.nationalIdCard,
         phoneNumber: student.phoneNumber,
         email: student.email,
-        password: hashedPassword, // Băm mật khẩu
+        password: hashedPassword,
         course: student.course,
         class: student.class,
         faculty: student.faculty,
@@ -314,11 +319,9 @@ export class StudentsService {
     }
 
     // Cập nhật thông tin sinh viên theo ID và DTO
-    const student = await this.studentModel.findByIdAndUpdate(
-      id,
-      updateStudentDto,
-      { new: true },
-    );
+    const student = await this.studentModel
+      .findByIdAndUpdate(id, updateStudentDto, { new: true })
+      .select('-password -refreshToken');
 
     if (!student) {
       // Nếu không tìm thấy, ném ra lỗi không tìm thấy

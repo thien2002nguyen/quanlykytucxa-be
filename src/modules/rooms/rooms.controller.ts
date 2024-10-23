@@ -12,7 +12,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { RoomsService } from './rooms.service';
-import { AuthModeratorOrAdminGuard } from 'src/guards/moderatorOrAdminAuth.guard';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -25,6 +24,7 @@ import { Room } from './interfaces/room.interface';
 import { UpdateRoomDto } from './dto/update-room.dto';
 import { ResponseInterface } from 'src/interfaces/response.interface';
 import { MetaPagination } from 'src/common/constant';
+import { AuthAdminGuard } from 'src/guards/adminAuth.guard';
 
 @ApiBearerAuth()
 @ApiTags('rooms')
@@ -33,7 +33,7 @@ export class RoomsController {
   constructor(private readonly roomsService: RoomsService) {}
 
   @Post()
-  @UseGuards(AuthModeratorOrAdminGuard)
+  @UseGuards(AuthAdminGuard)
   @ApiOperation({ summary: 'Tạo phòng mới' })
   @ApiResponse({
     status: HttpStatus.CREATED,
@@ -110,7 +110,7 @@ export class RoomsController {
   }
 
   @Get(':id')
-  @UseGuards(AuthModeratorOrAdminGuard)
+  @UseGuards(AuthAdminGuard)
   @ApiOperation({ summary: 'Lấy thông tin phòng theo ID' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Chi tiết phòng.' })
   @ApiResponse({
@@ -123,7 +123,7 @@ export class RoomsController {
   }
 
   @Put(':id')
-  @UseGuards(AuthModeratorOrAdminGuard)
+  @UseGuards(AuthAdminGuard)
   @ApiOperation({ summary: 'Cập nhật thông tin phòng theo ID' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -142,11 +142,11 @@ export class RoomsController {
   }
 
   @Delete(':id')
-  @UseGuards(AuthModeratorOrAdminGuard)
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(AuthAdminGuard)
+  @HttpCode(HttpStatus.ACCEPTED)
   @ApiOperation({ summary: 'Xóa phòng theo ID' })
   @ApiResponse({
-    status: HttpStatus.NO_CONTENT,
+    status: HttpStatus.ACCEPTED,
     description: 'Phòng đã được xóa thành công.',
   })
   @ApiResponse({

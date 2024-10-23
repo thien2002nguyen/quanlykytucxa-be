@@ -220,10 +220,10 @@ export class StudentsController {
 
   @Delete(':id')
   @UseGuards(AuthModeratorOrAdminGuard)
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @HttpCode(HttpStatus.ACCEPTED)
   @ApiOperation({ summary: 'Xóa sinh viên theo ID' })
   @ApiResponse({
-    status: HttpStatus.NO_CONTENT,
+    status: HttpStatus.ACCEPTED,
     description: 'Sinh viên đã được xóa thành công.',
   })
   @ApiResponse({

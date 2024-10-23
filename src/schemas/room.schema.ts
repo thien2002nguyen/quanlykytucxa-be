@@ -1,6 +1,6 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
-import { IsBoolean, IsNumber } from 'class-validator';
-import { Document } from 'mongoose';
+import { IsBoolean } from 'class-validator';
+import { Document, Types } from 'mongoose';
 
 @Schema({ timestamps: true })
 export class Room extends Document {
@@ -19,11 +19,11 @@ export class Room extends Document {
   @Prop({ required: true })
   floor: number;
 
-  @Prop({
-    default: 0, // Khởi tạo số người đã đăng ký là 0
-  })
-  @IsNumber()
-  registeredCount: number;
+  @Prop({ required: true, type: Types.ObjectId, ref: 'RoomBlock' })
+  roomBlockId: Types.ObjectId;
+
+  @Prop({ required: true, type: Types.ObjectId, ref: 'RoomType' })
+  roomTypeId: Types.ObjectId;
 
   @Prop()
   thumbnail: string;
@@ -32,10 +32,10 @@ export class Room extends Document {
   images: string[];
 
   @Prop({
-    default: true, // Mặc định phòng sẽ hiển thị
+    default: true,
   })
   @IsBoolean()
-  isActive: boolean; // Trạng thái hiển thị phòng
+  isActive: boolean;
 }
 
 export const RoomSchema = SchemaFactory.createForClass(Room);

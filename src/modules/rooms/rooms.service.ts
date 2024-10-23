@@ -11,20 +11,28 @@ import { CreateRoomDto } from './dto/create-room.dto';
 import { buildSearchQuery } from 'src/utils/search.utils';
 import { paginateQuery } from 'src/utils/pagination.utils';
 import { getSortOptions } from 'src/utils/sort.utils';
-import { generateSlug } from 'src/utils/slug.util';
 import { UpdateRoomDto } from './dto/update-room.dto';
 import { ResponseInterface } from 'src/interfaces/response.interface';
 import { MetaPagination } from 'src/common/constant';
+import { RoomBlock } from '../room-block/interfaces/room-block.interface';
+import slugify from 'slugify';
 
 @Injectable()
 export class RoomsService {
-  constructor(@InjectModel('Room') private readonly roomModel: Model<Room>) {}
+  constructor(
+    @InjectModel('Room') private readonly roomModel: Model<Room>,
+    @InjectModel('RoomBlock') private readonly roomBlockModel: Model<RoomBlock>,
+  ) {}
 
   async createRoom(createRoomDto: CreateRoomDto): Promise<Room> {
-    const { roomName, floor } = createRoomDto;
+    const { roomBlockId, floor, roomName } = createRoomDto;
 
-    // Kiểm tra tính duy nhất của roomName và floor
-    const existingRoom = await this.roomModel.findOne({ roomName, floor });
+    // Kiểm tra tính duy nhất của roomBlockId, floor, roomName
+    const existingRoom = await this.roomModel.findOne({
+      roomBlockId,
+      floor,
+      roomName,
+    });
 
     if (existingRoom) {
       throw new BadRequestException({
@@ -35,7 +43,24 @@ export class RoomsService {
       });
     }
 
-    const roomSlug = generateSlug(roomName, floor);
+    // Tìm kiếm tên của RoomBlock dựa trên roomBlockId
+    const roomBlock = await this.roomBlockModel.findById(roomBlockId);
+    if (!roomBlock) {
+      throw new NotFoundException({
+        statusCode: HttpStatus.NOT_FOUND,
+        error: 'Not Found',
+        message: 'Không tìm thấy dãy phòng.',
+        messageCode: 'ROOM_BLOCK_NOT_FOUND',
+      });
+    }
+
+    const roomBlockName = roomBlock.name;
+
+    // Nối chuỗi theo định dạng "tên dãy-số tầng-tên phòng"
+    const roomSlug = slugify(`${roomBlockName}-${floor}-${roomName}`, {
+      lower: true,
+      locale: 'vi',
+    });
 
     // Lưu room mới
     const newRoom = await this.roomModel.create({
@@ -126,11 +151,48 @@ export class RoomsService {
 
   async updateRoom(id: string, updateRoomDto: UpdateRoomDto): Promise<Room> {
     // Kiểm tra xem có tên phòng hay tầng được thay đổi thì slug phòng đó sẽ thay đổi theo
-    if (updateRoomDto.roomName || updateRoomDto.floor) {
-      const roomSlug = generateSlug(
-        updateRoomDto.roomName,
-        updateRoomDto.floor,
-      );
+    if (
+      updateRoomDto.roomBlockId ||
+      updateRoomDto.roomName ||
+      updateRoomDto.floor
+    ) {
+      const { roomBlockId, floor, roomName } = updateRoomDto;
+
+      // Kiểm tra tính duy nhất của roomBlockId, floor, roomName
+      const existingRoom = await this.roomModel.findOne({
+        roomBlockId,
+        floor,
+        roomName,
+      });
+
+      if (existingRoom) {
+        throw new BadRequestException({
+          statusCode: HttpStatus.BAD_REQUEST,
+          error: 'Bad Request',
+          message: 'Phòng đã tồn tại.',
+          messageCode: 'ROOM_ALREADY_EXISTS',
+        });
+      }
+
+      // Tìm kiếm tên của RoomBlock dựa trên roomBlockId
+      const roomBlock = await this.roomBlockModel.findById(roomBlockId);
+      if (!roomBlock) {
+        throw new NotFoundException({
+          statusCode: HttpStatus.NOT_FOUND,
+          error: 'Not Found',
+          message: 'Không tìm thấy dãy phòng.',
+          messageCode: 'ROOM_BLOCK_NOT_FOUND',
+        });
+      }
+
+      const roomBlockName = roomBlock.name;
+
+      // Nối chuỗi theo định dạng "tên dãy-số tầng-tên phòng"
+      const roomSlug = slugify(`${roomBlockName}-${floor}-${roomName}`, {
+        lower: true,
+        locale: 'vi',
+      });
+
       updateRoomDto.roomSlug = roomSlug; // Cập nhập slug mới
     }
 

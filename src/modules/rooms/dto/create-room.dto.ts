@@ -5,6 +5,7 @@ import {
   IsNumber,
   IsArray,
   IsOptional,
+  IsMongoId,
 } from 'class-validator';
 
 export class CreateRoomDto {
@@ -39,6 +40,22 @@ export class CreateRoomDto {
   @IsNotEmpty()
   @IsNumber()
   floor: number;
+
+  @ApiProperty({
+    description: 'ID của khối phòng',
+    example: '60c72b2f5f1b2c001c8e4c36',
+  })
+  @IsNotEmpty()
+  @IsMongoId()
+  roomBlockId: string;
+
+  @ApiProperty({
+    description: 'ID của loại phòng',
+    example: '60c72b2f5f1b2c001c8e4c37',
+  })
+  @IsNotEmpty()
+  @IsMongoId()
+  roomTypeId: string;
 
   @ApiProperty({
     description: 'Ảnh đại diện của phòng',

@@ -1,7 +1,13 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { CreateRoomDto } from './create-room.dto';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, IsNumber, IsArray } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsNumber,
+  IsArray,
+  IsMongoId,
+} from 'class-validator';
 
 export class UpdateRoomDto extends PartialType(CreateRoomDto) {
   @ApiPropertyOptional({
@@ -39,6 +45,22 @@ export class UpdateRoomDto extends PartialType(CreateRoomDto) {
   @IsOptional()
   @IsNumber()
   floor?: number;
+
+  @ApiPropertyOptional({
+    description: 'ID của khối phòng',
+    example: '60c72b2f5f1b2c001c8e4c36',
+  })
+  @IsOptional()
+  @IsMongoId()
+  roomBlockId?: string;
+
+  @ApiPropertyOptional({
+    description: 'ID của loại phòng',
+    example: '60c72b2f5f1b2c001c8e4c37',
+  })
+  @IsOptional()
+  @IsMongoId()
+  roomTypeId?: string;
 
   @ApiPropertyOptional({
     description: 'Ảnh đại diện của phòng',

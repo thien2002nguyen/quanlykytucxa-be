@@ -1,4 +1,6 @@
-nest generate module modules/upload --no-spec
-nest generate controller modules/upload --no-spec
-nest generate service modules/upload --no-spec
+nest generate module modules/room-block --no-spec
+nest generate controller modules/room-block --no-spec
+nest generate service modules/room-block --no-spec
+
+
 nest generate provider modules/upload --no-spec

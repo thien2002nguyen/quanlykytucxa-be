@@ -227,10 +227,10 @@ export class AdminController {
 
   @Delete(':id')
   @UseGuards(AuthAdminGuard)
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @HttpCode(HttpStatus.ACCEPTED)
   @ApiOperation({ summary: 'Xóa quản trị viên theo ID' })
   @ApiResponse({
-    status: HttpStatus.NO_CONTENT,
+    status: HttpStatus.ACCEPTED,
     description: 'Quản trị viên đã được xóa thành công.',
   })
   @ApiResponse({
