@@ -47,6 +47,9 @@ export class Student extends Document {
 
   @Prop()
   refreshToken: string;
+
+  @Prop({ default: false })
+  isBlocked: boolean;
 }
 
 export const StudentSchema = SchemaFactory.createForClass(Student);

@@ -77,7 +77,6 @@ export class AdminService {
   async login({ userName, password }: TypeLogin): Promise<{
     data: Admin;
     token: {
-      expiresIn: number; // Thời gian còn lại của accessToken
       accessToken: string;
       refreshToken: string;
       refreshExpiresIn: number; // Thời gian còn lại của refreshToken
@@ -125,9 +124,6 @@ export class AdminService {
     delete adminData.password; // Xóa trường password
     delete adminData.refreshToken; // Xóa trường refreshToken
 
-    const ACCESS_TOKEN_EXPIRATION = parseExpiration(
-      process.env.ACCESS_TOKEN_EXPIRATION || '1d',
-    );
     const REFRESH_TOKEN_EXPIRATION = parseExpiration(
       process.env.REFRESH_TOKEN_EXPIRATION || '7d',
     );
@@ -138,7 +134,6 @@ export class AdminService {
       token: {
         accessToken,
         refreshToken,
-        expiresIn: ACCESS_TOKEN_EXPIRATION, // Thời gian tồn tại của access token
         refreshExpiresIn: REFRESH_TOKEN_EXPIRATION, // Thời gian tồn tại của refresh token
       },
     };

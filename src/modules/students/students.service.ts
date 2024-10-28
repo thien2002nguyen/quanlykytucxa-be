@@ -113,7 +113,6 @@ export class StudentsService {
   async login({ userName, password }: TypeLogin): Promise<{
     data: Student;
     token: {
-      expiresIn: number; // Thời gian còn lại của accessToken
       accessToken: string;
       refreshToken: string;
       refreshExpiresIn: number; // Thời gian còn lại của refreshToken
@@ -127,6 +126,16 @@ export class StudentsService {
         error: 'Bad Request',
         message: 'Thông tin đăng nhập không chính xác.',
         messageCode: 'INVALID_CREDENTIALS',
+      });
+    }
+
+    // Kiểm tra xem tài khoản có bị khóa không
+    if (student.isBlocked) {
+      throw new BadRequestException({
+        statusCode: HttpStatus.FORBIDDEN,
+        error: 'Forbidden',
+        message: 'Tài khoản của bạn đã bị khóa.',
+        messageCode: 'ACCOUNT_BLOCKED',
       });
     }
 
@@ -153,9 +162,6 @@ export class StudentsService {
     delete studentData.password; // Xóa trường password
     delete studentData.refreshToken; // Xóa trường refreshToken
 
-    const ACCESS_TOKEN_EXPIRATION = parseExpiration(
-      process.env.ACCESS_TOKEN_EXPIRATION || '1d',
-    );
     const REFRESH_TOKEN_EXPIRATION = parseExpiration(
       process.env.REFRESH_TOKEN_EXPIRATION || '7d',
     );
@@ -166,7 +172,6 @@ export class StudentsService {
       token: {
         accessToken,
         refreshToken,
-        expiresIn: ACCESS_TOKEN_EXPIRATION, // Thời gian tồn tại của access token
         refreshExpiresIn: REFRESH_TOKEN_EXPIRATION, // Thời gian tồn tại của refresh token
       },
     };
@@ -186,6 +191,16 @@ export class StudentsService {
         error: 'Unauthorized',
         message: 'Không tìm thấy sinh viên.',
         messageCode: 'STUDENT_NOT_FOUND',
+      });
+    }
+
+    // Kiểm tra xem tài khoản có bị khóa không
+    if (student.isBlocked) {
+      throw new BadRequestException({
+        statusCode: HttpStatus.FORBIDDEN,
+        error: 'Forbidden',
+        message: 'Tài khoản của bạn đã bị khóa.',
+        messageCode: 'ACCOUNT_BLOCKED',
       });
     }
 

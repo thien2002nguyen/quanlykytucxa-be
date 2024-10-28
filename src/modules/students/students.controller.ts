@@ -70,7 +70,6 @@ export class StudentsController {
   async login(@Body() loginDto: LoginStudentDto): Promise<{
     data: Student;
     token: {
-      expiresIn: number;
       accessToken: string;
       refreshToken: string;
       refreshExpiresIn: number;

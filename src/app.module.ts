@@ -10,6 +10,9 @@ import { UploadModule } from './modules/upload/upload.module';
 import { ServicesModule } from './modules/services/services.module';
 import { RoomTypeModule } from './modules/room-type/room-type.module';
 import { RoomBlockModule } from './modules/room-block/room-block.module';
+import { MonthlyVisitsModule } from './modules/monthly-visits/monthly-visits.module';
+import { SchoolModule } from './modules/school/school.module';
+import { BannersModule } from './modules/banners/banners.module';
 
 @Module({
   imports: [
@@ -27,6 +30,9 @@ import { RoomBlockModule } from './modules/room-block/room-block.module';
     ServicesModule,
     RoomTypeModule,
     RoomBlockModule,
+    MonthlyVisitsModule,
+    SchoolModule,
+    BannersModule,
   ],
   providers: [DatabaseService],
 })

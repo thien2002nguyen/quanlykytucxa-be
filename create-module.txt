@@ -1,6 +1,6 @@
-nest generate module modules/room-block --no-spec
-nest generate controller modules/room-block --no-spec
-nest generate service modules/room-block --no-spec
+nest generate module modules/banners --no-spec
+nest generate controller modules/banners --no-spec
+nest generate service modules/banners --no-spec
 
 
 nest generate provider modules/upload --no-spec

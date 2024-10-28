@@ -17,6 +17,7 @@ export interface Student extends Document {
   avatar?: string;
   password?: string;
   refreshToken?: string;
+  isBlocked: boolean;
 }
 
 export interface StudentAccount {

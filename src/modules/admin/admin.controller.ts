@@ -69,7 +69,6 @@ export class AdminController {
   async login(@Body() loginDto: LoginAdminDto): Promise<{
     data: Admin;
     token: {
-      expiresIn: number;
       accessToken: string;
       refreshToken: string;
       refreshExpiresIn: number;
