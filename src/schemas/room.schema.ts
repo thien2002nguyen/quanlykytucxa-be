@@ -31,9 +31,7 @@ export class Room extends Document {
   @Prop()
   images: string[];
 
-  @Prop({
-    default: true,
-  })
+  @Prop({ default: true })
   @IsBoolean()
   isActive: boolean;
 }

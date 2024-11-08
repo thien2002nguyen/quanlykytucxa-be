@@ -1,6 +1,5 @@
-nest generate module modules/banners --no-spec
-nest generate controller modules/banners --no-spec
-nest generate service modules/banners --no-spec
-
+nest generate module modules/unit-price --no-spec
+nest generate controller modules/unit-price --no-spec
+nest generate service modules/unit-price --no-spec
 
 nest generate provider modules/upload --no-spec

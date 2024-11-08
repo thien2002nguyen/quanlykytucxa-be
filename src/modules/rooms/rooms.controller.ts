@@ -24,7 +24,7 @@ import { Room } from './interfaces/room.interface';
 import { UpdateRoomDto } from './dto/update-room.dto';
 import { ResponseInterface } from 'src/interfaces/response.interface';
 import { MetaPagination } from 'src/common/constant';
-import { AuthAdminGuard } from 'src/guards/adminAuth.guard';
+import { AuthModeratorOrAdminGuard } from 'src/guards/moderatorOrAdminAuth.guard';
 
 @ApiBearerAuth()
 @ApiTags('rooms')
@@ -33,7 +33,7 @@ export class RoomsController {
   constructor(private readonly roomsService: RoomsService) {}
 
   @Post()
-  @UseGuards(AuthAdminGuard)
+  @UseGuards(AuthModeratorOrAdminGuard)
   @ApiOperation({ summary: 'Tạo phòng mới' })
   @ApiResponse({
     status: HttpStatus.CREATED,
@@ -110,7 +110,7 @@ export class RoomsController {
   }
 
   @Get(':id')
-  @UseGuards(AuthAdminGuard)
+  @UseGuards(AuthModeratorOrAdminGuard)
   @ApiOperation({ summary: 'Lấy thông tin phòng theo ID' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Chi tiết phòng.' })
   @ApiResponse({
@@ -123,7 +123,7 @@ export class RoomsController {
   }
 
   @Put(':id')
-  @UseGuards(AuthAdminGuard)
+  @UseGuards(AuthModeratorOrAdminGuard)
   @ApiOperation({ summary: 'Cập nhật thông tin phòng theo ID' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -142,7 +142,7 @@ export class RoomsController {
   }
 
   @Delete(':id')
-  @UseGuards(AuthAdminGuard)
+  @UseGuards(AuthModeratorOrAdminGuard)
   @HttpCode(HttpStatus.ACCEPTED)
   @ApiOperation({ summary: 'Xóa phòng theo ID' })
   @ApiResponse({

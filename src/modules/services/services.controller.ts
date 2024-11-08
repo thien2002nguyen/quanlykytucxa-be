@@ -21,7 +21,7 @@ import { CreateServiceDto } from './dto/create-service.dto';
 import { Service } from './interfaces/service.interface';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { ResponseInterface } from 'src/interfaces/response.interface';
-import { AuthAdminGuard } from 'src/guards/adminAuth.guard';
+import { AuthModeratorOrAdminGuard } from 'src/guards/moderatorOrAdminAuth.guard';
 
 @ApiBearerAuth()
 @ApiTags('services')
@@ -30,7 +30,7 @@ export class ServicesController {
   constructor(private readonly servicesService: ServicesService) {}
 
   @Post()
-  @UseGuards(AuthAdminGuard)
+  @UseGuards(AuthModeratorOrAdminGuard)
   @ApiOperation({ summary: 'Tạo dịch vụ mới' })
   @ApiResponse({
     status: HttpStatus.CREATED,
@@ -71,7 +71,7 @@ export class ServicesController {
   }
 
   @Put(':id')
-  @UseGuards(AuthAdminGuard)
+  @UseGuards(AuthModeratorOrAdminGuard)
   @ApiOperation({ summary: 'Cập nhật thông tin dịch vụ theo ID' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -93,7 +93,7 @@ export class ServicesController {
   }
 
   @Delete(':id')
-  @UseGuards(AuthAdminGuard)
+  @UseGuards(AuthModeratorOrAdminGuard)
   @HttpCode(HttpStatus.ACCEPTED)
   @ApiOperation({ summary: 'Xóa dịch vụ theo ID' })
   @ApiResponse({

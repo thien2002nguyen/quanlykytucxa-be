@@ -22,7 +22,7 @@ export class Admin extends Document {
   @Prop()
   avatar: string;
 
-  @Prop({ required: true, default: RoleAdmin.MODERATOR })
+  @Prop({ default: RoleAdmin.MODERATOR })
   role: RoleAdmin;
 }
 

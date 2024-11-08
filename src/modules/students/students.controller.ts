@@ -72,7 +72,7 @@ export class StudentsController {
     token: {
       accessToken: string;
       refreshToken: string;
-      refreshExpiresIn: number;
+      refreshExpiresIn: string;
     };
   }> {
     return await this.studentsService.login({

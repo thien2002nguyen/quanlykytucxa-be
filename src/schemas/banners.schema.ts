@@ -7,7 +7,7 @@ export class Banner extends Document {
   url: string;
 
   @Prop({ default: true })
-  isActive: string;
+  isActive: boolean;
 }
 
 export const BannerSchema = SchemaFactory.createForClass(Banner);

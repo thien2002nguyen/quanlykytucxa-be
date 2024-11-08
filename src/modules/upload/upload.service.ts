@@ -74,22 +74,35 @@ export class UploadService {
   }
 
   // Phương thức xóa file trên Cloudinary và trong database
-  async deleteFile(public_id: string): Promise<void> {
+  async deleteFile(url: string): Promise<void> {
     return new Promise(async (resolve, reject) => {
-      // Gọi phương thức destroy của Cloudinary để xóa ảnh
-      cloudinary.uploader.destroy(public_id, async (error, result) => {
-        if (error) {
-          return reject(error); // Xử lý lỗi nếu có
+      try {
+        // Tìm kiếm trong bảng Upload để lấy public_id từ url
+        const file = await this.uploadModel.findOne({ secure_url: url }); // Tìm file theo url
+
+        if (!file) {
+          return reject(new Error('File không tồn tại trong database')); // Không tìm thấy file trong database
         }
 
-        // Xóa bản ghi tương ứng trong database
-        try {
-          await this.uploadModel.deleteOne({ public_id }); // Xóa theo public_id
-          resolve(result); // Trả về kết quả khi xóa thành công
-        } catch (dbError) {
-          reject(dbError); // Xử lý lỗi nếu không xóa được trong database
-        }
-      });
+        const public_id = file.public_id; // Lấy public_id từ file tìm thấy
+
+        // Gọi phương thức destroy của Cloudinary để xóa ảnh
+        cloudinary.uploader.destroy(public_id, async (error, result) => {
+          if (error) {
+            return reject(error); // Xử lý lỗi nếu có khi xóa ảnh trên Cloudinary
+          }
+
+          // Nếu xóa thành công trên Cloudinary, xóa bản ghi trong database
+          try {
+            await this.uploadModel.deleteOne({ public_id }); // Xóa file theo public_id trong database
+            resolve(result); // Trả về kết quả khi xóa thành công
+          } catch (dbError) {
+            reject(dbError); // Xử lý lỗi khi không xóa được trong database
+          }
+        });
+      } catch (error) {
+        reject(error); // Xử lý lỗi khi tìm kiếm trong database hoặc bất kỳ lỗi nào xảy ra
+      }
     });
   }
 

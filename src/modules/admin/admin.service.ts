@@ -20,7 +20,7 @@ import { buildSearchQuery } from 'src/utils/search.utils';
 import { paginateQuery } from 'src/utils/pagination.utils';
 import { getSortOptions } from 'src/utils/sort.utils';
 import { UpdateAdminDto } from './dto/update-admin.dto';
-import { parseExpiration } from 'src/utils/expirationUtils';
+import { getRefreshTokenExpirationDate } from 'src/utils/expirationUtils';
 import { TypeLogin } from 'src/interfaces/login.interfaces';
 import { MetaPagination } from 'src/common/constant';
 
@@ -79,7 +79,7 @@ export class AdminService {
     token: {
       accessToken: string;
       refreshToken: string;
-      refreshExpiresIn: number; // Thời gian còn lại của refreshToken
+      refreshExpiresIn: string; // Thời gian còn lại của refreshToken
     };
   }> {
     const admin = await this.adminModel.findOne({
@@ -124,7 +124,7 @@ export class AdminService {
     delete adminData.password; // Xóa trường password
     delete adminData.refreshToken; // Xóa trường refreshToken
 
-    const REFRESH_TOKEN_EXPIRATION = parseExpiration(
+    const REFRESH_TOKEN_EXPIRATION = getRefreshTokenExpirationDate(
       process.env.REFRESH_TOKEN_EXPIRATION || '7d',
     );
 

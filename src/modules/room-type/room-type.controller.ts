@@ -21,7 +21,7 @@ import { CreateRoomTypeDto } from './dto/create-room-type.dto';
 import { RoomType } from './interfaces/room-type.interface';
 import { UpdateRoomTypeDto } from './dto/update-room-type.dto';
 import { ResponseInterface } from 'src/interfaces/response.interface';
-import { AuthAdminGuard } from 'src/guards/adminAuth.guard';
+import { AuthModeratorOrAdminGuard } from 'src/guards/moderatorOrAdminAuth.guard';
 
 @ApiBearerAuth()
 @ApiTags('room-types')
@@ -30,7 +30,7 @@ export class RoomTypeController {
   constructor(private readonly roomTypeService: RoomTypeService) {}
 
   @Post()
-  @UseGuards(AuthAdminGuard)
+  @UseGuards(AuthModeratorOrAdminGuard)
   @ApiOperation({ summary: 'Tạo loại phòng mới' })
   @ApiResponse({
     status: HttpStatus.CREATED,
@@ -75,7 +75,7 @@ export class RoomTypeController {
   }
 
   @Put(':id')
-  @UseGuards(AuthAdminGuard)
+  @UseGuards(AuthModeratorOrAdminGuard)
   @ApiOperation({ summary: 'Cập nhật thông tin loại phòng theo ID' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -97,7 +97,7 @@ export class RoomTypeController {
   }
 
   @Delete(':id')
-  @UseGuards(AuthAdminGuard)
+  @UseGuards(AuthModeratorOrAdminGuard)
   @HttpCode(HttpStatus.ACCEPTED)
   @ApiOperation({ summary: 'Xóa loại phòng theo ID' })
   @ApiResponse({

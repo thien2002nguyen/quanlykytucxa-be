@@ -40,12 +40,12 @@ export class UploadController {
   }
 
   @Delete('image')
-  async deleteImage(@Body('public_id') public_id: string) {
-    // Kiểm tra xem public_id có tồn tại không
-    if (!public_id) {
-      throw new BadRequestException('Public ID là bắt buộc'); // Thông báo lỗi nếu không có public_id
+  async deleteImage(@Body('url') url: string) {
+    // Kiểm tra xem url có tồn tại không
+    if (!url) {
+      throw new BadRequestException('Public ID là bắt buộc'); // Thông báo lỗi nếu không có url
     }
-    await this.uploadService.deleteFile(public_id); // Gọi phương thức xóa ảnh
+    await this.uploadService.deleteFile(url); // Gọi phương thức xóa ảnh
     return { message: 'Xóa ảnh thành công' }; // Trả về thông báo thành công
   }
 

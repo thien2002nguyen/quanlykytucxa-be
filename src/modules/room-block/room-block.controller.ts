@@ -21,7 +21,7 @@ import { CreateRoomBlockDto } from './dto/create-room-block.dto';
 import { RoomBlock } from './interfaces/room-block.interface';
 import { UpdateRoomBlockDto } from './dto/update-room-block.dto';
 import { ResponseInterface } from 'src/interfaces/response.interface';
-import { AuthAdminGuard } from 'src/guards/adminAuth.guard';
+import { AuthModeratorOrAdminGuard } from 'src/guards/moderatorOrAdminAuth.guard';
 
 @ApiBearerAuth()
 @ApiTags('room-blocks')
@@ -30,7 +30,7 @@ export class RoomBlockController {
   constructor(private readonly roomBlockService: RoomBlockService) {}
 
   @Post()
-  @UseGuards(AuthAdminGuard)
+  @UseGuards(AuthModeratorOrAdminGuard)
   @ApiOperation({ summary: 'Tạo khối phòng mới' })
   @ApiResponse({
     status: HttpStatus.CREATED,
@@ -77,7 +77,7 @@ export class RoomBlockController {
   }
 
   @Put(':id')
-  @UseGuards(AuthAdminGuard)
+  @UseGuards(AuthModeratorOrAdminGuard)
   @ApiOperation({ summary: 'Cập nhật thông tin khối phòng theo ID' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -99,7 +99,7 @@ export class RoomBlockController {
   }
 
   @Delete(':id')
-  @UseGuards(AuthAdminGuard)
+  @UseGuards(AuthModeratorOrAdminGuard)
   @HttpCode(HttpStatus.ACCEPTED)
   @ApiOperation({ summary: 'Xóa khối phòng theo ID' })
   @ApiResponse({

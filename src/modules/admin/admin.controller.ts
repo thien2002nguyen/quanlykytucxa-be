@@ -31,6 +31,7 @@ import { AuthAdminGuard } from 'src/guards/adminAuth.guard';
 import { RefreshTokenAdminDto } from './dto/refreshToken-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
 import { MetaPagination } from 'src/common/constant';
+import { AuthModeratorOrAdminGuard } from 'src/guards/moderatorOrAdminAuth.guard';
 
 @ApiBearerAuth()
 @ApiTags('admin')
@@ -71,7 +72,7 @@ export class AdminController {
     token: {
       accessToken: string;
       refreshToken: string;
-      refreshExpiresIn: number;
+      refreshExpiresIn: string;
     };
   }> {
     return await this.adminService.login({
@@ -162,7 +163,7 @@ export class AdminController {
   }
 
   @Get('auth-me')
-  @UseGuards(AuthAdminGuard)
+  @UseGuards(AuthModeratorOrAdminGuard)
   @ApiOperation({
     summary: 'Lấy thông tin cá nhân của quản trị viên bằng access token',
   })

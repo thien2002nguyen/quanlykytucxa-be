@@ -13,6 +13,8 @@ import { RoomBlockModule } from './modules/room-block/room-block.module';
 import { MonthlyVisitsModule } from './modules/monthly-visits/monthly-visits.module';
 import { SchoolModule } from './modules/school/school.module';
 import { BannersModule } from './modules/banners/banners.module';
+import { IntroductionModule } from './modules/introduction/introduction.module';
+import { UnitPriceModule } from './modules/unit-price/unit-price.module';
 
 @Module({
   imports: [
@@ -33,6 +35,8 @@ import { BannersModule } from './modules/banners/banners.module';
     MonthlyVisitsModule,
     SchoolModule,
     BannersModule,
+    IntroductionModule,
+    UnitPriceModule,
   ],
   providers: [DatabaseService],
 })

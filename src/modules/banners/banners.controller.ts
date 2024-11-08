@@ -21,9 +21,9 @@ import { CreateBannerDto } from './dto/create-banner.dto';
 import { UpdateBannerDto } from './dto/update-banner.dto';
 import { Banner } from './interfaces/banner.interface';
 import { ResponseInterface } from 'src/interfaces/response.interface';
-import { AuthAdminGuard } from 'src/guards/adminAuth.guard';
 import { BannerService } from './banners.service';
 import { UpdateBannersStatusDto } from './dto/update-multi-banner.dto';
+import { AuthModeratorOrAdminGuard } from 'src/guards/moderatorOrAdminAuth.guard';
 
 @ApiBearerAuth()
 @ApiTags('banners')
@@ -32,7 +32,7 @@ export class BannerController {
   constructor(private readonly bannerService: BannerService) {}
 
   @Post()
-  @UseGuards(AuthAdminGuard)
+  @UseGuards(AuthModeratorOrAdminGuard)
   @ApiOperation({ summary: 'Tạo banner mới' })
   @ApiResponse({
     status: HttpStatus.CREATED,
@@ -76,7 +76,7 @@ export class BannerController {
   }
 
   @Put(':id')
-  @UseGuards(AuthAdminGuard)
+  @UseGuards(AuthModeratorOrAdminGuard)
   @ApiOperation({ summary: 'Cập nhật thông tin banner theo ID' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -95,7 +95,7 @@ export class BannerController {
   }
 
   @Delete(':id')
-  @UseGuards(AuthAdminGuard)
+  @UseGuards(AuthModeratorOrAdminGuard)
   @HttpCode(HttpStatus.ACCEPTED)
   @ApiOperation({ summary: 'Xóa banner theo ID' })
   @ApiResponse({
@@ -119,7 +119,7 @@ export class BannerController {
 
   @ApiOperation({ summary: 'Cập nhật trạng thái cho nhiều banner' })
   @Patch('status')
-  @UseGuards(AuthAdminGuard)
+  @UseGuards(AuthModeratorOrAdminGuard)
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Trạng thái của các banner đã được cập nhật.',

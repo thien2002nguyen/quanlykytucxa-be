@@ -21,7 +21,7 @@ import {
   generateRefreshStudentToken,
   verifyStudentToken,
 } from 'src/utils/tokenUtils';
-import { parseExpiration } from 'src/utils/expirationUtils';
+import { getRefreshTokenExpirationDate } from 'src/utils/expirationUtils';
 import { MetaPagination } from 'src/common/constant';
 
 @Injectable()
@@ -115,7 +115,7 @@ export class StudentsService {
     token: {
       accessToken: string;
       refreshToken: string;
-      refreshExpiresIn: number; // Thời gian còn lại của refreshToken
+      refreshExpiresIn: string; // Thời gian còn lại của refreshToken
     };
   }> {
     const student = await this.studentModel.findOne({ studentId: userName });
@@ -162,7 +162,7 @@ export class StudentsService {
     delete studentData.password; // Xóa trường password
     delete studentData.refreshToken; // Xóa trường refreshToken
 
-    const REFRESH_TOKEN_EXPIRATION = parseExpiration(
+    const REFRESH_TOKEN_EXPIRATION = getRefreshTokenExpirationDate(
       process.env.REFRESH_TOKEN_EXPIRATION || '7d',
     );
 
