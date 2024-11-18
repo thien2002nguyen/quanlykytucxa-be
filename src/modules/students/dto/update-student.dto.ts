@@ -1,14 +1,14 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { CreateStudentDto } from './create-student.dto';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsOptional, IsMongoId } from 'class-validator';
+import { IsOptional, IsString, IsMongoId, IsBoolean } from 'class-validator';
 import { Types } from 'mongoose';
 
 export class UpdateStudentDto extends PartialType(CreateStudentDto) {
   @ApiPropertyOptional({ description: 'Mã sinh viên', example: 'S12345' })
   @IsOptional()
   @IsString()
-  studentId?: string;
+  studentCode?: string;
 
   @ApiPropertyOptional({
     description: 'Số căn cước công dân',
@@ -18,61 +18,55 @@ export class UpdateStudentDto extends PartialType(CreateStudentDto) {
   @IsString()
   nationalIdCard?: string;
 
-  @ApiPropertyOptional({ description: 'Họ và tên', example: 'Nguyễn Văn A' })
+  @ApiPropertyOptional({
+    description: 'Họ tên sinh viên',
+    example: 'Nguyễn Văn A',
+  })
   @IsOptional()
   @IsString()
-  fullName?: string;
+  fullName: string;
 
   @ApiPropertyOptional({
     description: 'Ngày sinh',
-    example: '2000-01-01T00:00:00.000Z',
+    example: '2000-01-01',
   })
   @IsOptional()
+  @IsString()
   dateOfBirth?: string;
 
-  @ApiPropertyOptional({ description: 'Giới tính', example: 'Nam' })
+  @ApiPropertyOptional({ description: 'Giới tính', example: 'male' })
   @IsOptional()
   @IsString()
   gender?: string;
 
-  @ApiPropertyOptional({ description: 'Lớp học', example: 'Lớp A' })
+  @ApiPropertyOptional({ description: 'Lớp học', example: 'Lớp 10A1' })
   @IsOptional()
   @IsString()
-  class?: string;
-
-  @ApiPropertyOptional({ description: 'Khoa', example: 'Khoa Khoa học' })
-  @IsOptional()
-  @IsString()
-  faculty?: string;
-
-  @ApiPropertyOptional({ description: 'Số điện thoại', example: '+1234567890' })
-  @IsOptional()
-  @IsString()
-  phoneNumber?: string;
+  takeClass?: string;
 
   @ApiPropertyOptional({
-    description: 'Email',
-    example: 'sinhvien@example.com',
+    description: 'Khoa',
+    example: 'Công nghệ thông tin',
   })
   @IsOptional()
   @IsString()
-  email?: string;
+  department?: string;
 
   @ApiPropertyOptional({
-    description: 'Địa chỉ liên hệ',
-    example: '123 Đường Chính, Thành phố',
+    description: 'Địa chỉ',
+    example: '123 Đường ABC, Quận XYZ, Thành phố',
   })
   @IsOptional()
   @IsString()
-  contactAddress?: string;
+  address?: string;
 
   @ApiPropertyOptional({
-    description: 'Khóa học',
-    example: '2024',
+    description: 'Năm tuyển sinh',
+    example: '2023',
   })
   @IsOptional()
   @IsString()
-  course?: string;
+  enrollmentYear?: string;
 
   @ApiPropertyOptional({
     description: 'ID phòng của sinh viên',
@@ -91,10 +85,10 @@ export class UpdateStudentDto extends PartialType(CreateStudentDto) {
   avatar?: string;
 
   @ApiPropertyOptional({
-    description: 'Mật khẩu',
-    example: 'Password123!',
+    description: 'Tình trạng tài khoản',
+    example: false,
   })
   @IsOptional()
-  @IsString()
-  password: string;
+  @IsBoolean()
+  isBlocked?: boolean;
 }

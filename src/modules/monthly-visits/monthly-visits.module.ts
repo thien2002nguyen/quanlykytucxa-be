@@ -6,14 +6,14 @@ import {
   MonthlyVisit,
   MonthlyVisitSchema,
 } from 'src/schemas/monthly-visit.schema';
-import { AdminModule } from '../admin/admin.module';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: MonthlyVisit.name, schema: MonthlyVisitSchema },
     ]),
-    AdminModule,
+    UsersModule,
   ],
   controllers: [MonthlyVisitController],
   providers: [MonthlyVisitService],

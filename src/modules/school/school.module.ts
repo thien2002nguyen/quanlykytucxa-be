@@ -3,12 +3,12 @@ import { SchoolController } from './school.controller';
 import { SchoolService } from './school.service';
 import { School, SchoolSchema } from 'src/schemas/school.schema';
 import { MongooseModule } from '@nestjs/mongoose';
-import { AdminModule } from '../admin/admin.module';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: School.name, schema: SchoolSchema }]),
-    AdminModule,
+    UsersModule,
   ],
   controllers: [SchoolController],
   providers: [SchoolService],

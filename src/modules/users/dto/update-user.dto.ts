@@ -1,17 +1,17 @@
 import { PartialType } from '@nestjs/mapped-types';
-import { CreateAdminDto } from './create-admin.dto';
+import { RegisterDto } from './register.dto';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, IsString, IsEmail, IsEnum } from 'class-validator';
-import { RoleAdmin } from '../interfaces/admin.interface';
+import { RoleAuth } from '../interfaces/user.interface';
 
-export class UpdateAdminDto extends PartialType(CreateAdminDto) {
+export class UpdateUserDto extends PartialType(RegisterDto) {
   @ApiPropertyOptional({
     description: 'Họ và tên',
     example: 'Nguyễn Văn A',
   })
   @IsOptional()
   @IsString()
-  fullName?: string;
+  userName?: string;
 
   @ApiPropertyOptional({
     description: 'Email',
@@ -38,7 +38,7 @@ export class UpdateAdminDto extends PartialType(CreateAdminDto) {
   password?: string;
 
   @ApiPropertyOptional({
-    description: 'Ảnh đại diện của quản trị viên',
+    description: 'Ảnh đại diện',
     example: 'image.png',
   })
   @IsOptional()
@@ -46,11 +46,11 @@ export class UpdateAdminDto extends PartialType(CreateAdminDto) {
   avatar?: string;
 
   @ApiPropertyOptional({
-    description: 'Vai trò của quản trị viên',
-    example: RoleAdmin.MODERATOR,
-    enum: RoleAdmin, // Cung cấp enum cho Swagger
+    description: 'Quyền truy cập',
+    example: RoleAuth.STUDENT,
+    enum: RoleAuth, // Cung cấp enum cho Swagger
   })
   @IsOptional()
-  @IsEnum(RoleAdmin) // Sử dụng IsEnum để validate role
-  role?: RoleAdmin;
+  @IsEnum(RoleAuth) // Sử dụng IsEnum để validate role
+  role?: RoleAuth;
 }

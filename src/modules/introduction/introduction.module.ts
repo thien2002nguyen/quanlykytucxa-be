@@ -6,14 +6,14 @@ import {
   Introduction,
   IntroductionSchema,
 } from 'src/schemas/introduction.schema';
-import { AdminModule } from '../admin/admin.module';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Introduction.name, schema: IntroductionSchema },
     ]),
-    AdminModule,
+    UsersModule,
   ],
   controllers: [IntroductionController],
   providers: [IntroductionService],

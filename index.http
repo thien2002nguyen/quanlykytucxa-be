@@ -1,6 +1,2 @@
 ###
-POST http://localhost:5000/api/admin/insert-admin/example
-
-
-###
-POST http://localhost:5000/api/students/insert-students/example
+POST http://localhost:5000/api/users/insert-user/example

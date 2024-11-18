@@ -1,5 +1,3 @@
-import * as dayjs from 'dayjs';
-
 export const parseExpiration = (expiration: string): number => {
   const timeUnit = expiration.slice(-1);
   const timeValue = parseInt(expiration.slice(0, -1), 10);
@@ -18,8 +16,8 @@ export const parseExpiration = (expiration: string): number => {
   }
 };
 
-export const getRefreshTokenExpirationDate = (expiration: string): string => {
+export const getRefreshTokenExpirationDate = (expiration: string): number => {
   const expirationInSeconds = parseExpiration(expiration);
-  const expirationDate = dayjs().add(expirationInSeconds, 'second');
-  return expirationDate.toISOString();
+  const expirationDate = Date.now() + expirationInSeconds;
+  return expirationDate;
 };

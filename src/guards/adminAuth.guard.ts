@@ -7,15 +7,12 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { RoleAdmin } from 'src/modules/admin/interfaces/admin.interface';
-import { Admin } from 'src/schemas/admin.schema';
-import { verifyAdminToken } from 'src/utils/tokenUtils';
+import { RoleAuth, User } from 'src/modules/users/interfaces/user.interface';
+import { verifyToken } from 'src/utils/token.utils';
 
 @Injectable()
 export class AuthAdminGuard implements CanActivate {
-  constructor(
-    @InjectModel('Admin') private readonly adminModel: Model<Admin>,
-  ) {}
+  constructor(@InjectModel('User') private readonly userModel: Model<User>) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
@@ -25,30 +22,29 @@ export class AuthAdminGuard implements CanActivate {
       throw new UnauthorizedException('Không có token.');
     }
 
-    const payload = verifyAdminToken(token);
+    const payload = verifyToken(token);
     if (!payload) {
       throw new UnauthorizedException('Token không hợp lệ.');
     }
 
-    // Tìm trong bảng admin trực tiếp từ database (MongoDB)
-    const auth = await this.adminModel
+    const auth = await this.userModel
       .findById(payload.id)
       .select('-password -refreshToken');
     if (!auth) {
       throw new UnauthorizedException('Quản trị viên không tồn tại.');
     }
 
-    // Kiểm tra vai trò trong token có phải là 'moderator' hay không
-    if (payload.role !== RoleAdmin.ADMIN) {
+    // Kiểm tra vai trò trong token
+    if (payload.role !== RoleAuth.ADMIN) {
       throw new ForbiddenException('Bạn không có quyền truy cập.');
     }
 
     // Kiểm tra vai trò trong database
-    if (auth.role !== RoleAdmin.ADMIN) {
+    if (auth.role !== RoleAuth.ADMIN) {
       throw new ForbiddenException('Vai trò không hợp lệ.');
     }
 
-    // Đính kèm thông tin admin vào request để sử dụng trong controller nếu cần
+    // Đính kèm thông tin user vào request để sử dụng trong controller nếu cần
     request.auth = auth;
 
     return true;

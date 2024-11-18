@@ -3,14 +3,14 @@ import { UnitPriceController } from './unit-price.controller';
 import { UnitPriceService } from './unit-price.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UnitPrice, UnitPriceSchema } from 'src/schemas/unit-price.schema';
-import { AdminModule } from '../admin/admin.module';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: UnitPrice.name, schema: UnitPriceSchema },
     ]),
-    AdminModule,
+    UsersModule,
   ],
   controllers: [UnitPriceController],
   providers: [UnitPriceService],

@@ -3,8 +3,11 @@ import { Document, Types } from 'mongoose';
 
 @Schema({ timestamps: true })
 export class Student extends Document {
+  @Prop({ type: Types.ObjectId, ref: 'User', unique: true })
+  userId: string;
+
   @Prop({ required: true, unique: true })
-  studentId: string;
+  studentCode: string;
 
   @Prop({ required: true, unique: true })
   nationalIdCard: string;
@@ -15,41 +18,23 @@ export class Student extends Document {
   @Prop({ required: true })
   dateOfBirth: string;
 
-  @Prop({ required: true })
+  @Prop({ default: 'male' })
   gender: string;
 
   @Prop({ required: true })
-  class: string;
+  takeClass: string; // lớp
 
   @Prop({ required: true })
-  faculty: string; // học khoa (CNTT)
-
-  @Prop({ required: true, unique: true })
-  phoneNumber: string;
-
-  @Prop({ required: true, unique: true })
-  email: string;
+  department: string; // phòng - khoa (CNTT)
 
   @Prop({ required: true })
-  contactAddress: string;
+  address: string;
 
   @Prop({ required: true })
-  course: string; // niên khóa
+  enrollmentYear: string; // tuyển sinh năm
 
   @Prop({ type: Types.ObjectId, ref: 'Room' })
-  roomId: Types.ObjectId;
-
-  @Prop()
-  avatar: string;
-
-  @Prop({ required: true })
-  password: string;
-
-  @Prop()
-  refreshToken: string;
-
-  @Prop({ default: false })
-  isBlocked: boolean;
+  roomId: Types.ObjectId; // ở phòng
 }
 
 export const StudentSchema = SchemaFactory.createForClass(Student);
