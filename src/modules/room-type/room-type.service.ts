@@ -20,7 +20,7 @@ export class RoomTypeService {
   }
 
   async findRoomTypes(): Promise<RoomType[]> {
-    return this.roomTypeModel.find();
+    return this.roomTypeModel.find().sort({ createdAt: -1 });
   }
 
   async findByIdRoomType(id: string): Promise<RoomType> {

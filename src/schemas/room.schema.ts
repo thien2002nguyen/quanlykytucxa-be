@@ -25,6 +25,18 @@ export class Room extends Document {
   @Prop({ required: true, type: Types.ObjectId, ref: 'RoomType' })
   roomTypeId: Types.ObjectId;
 
+  @Prop({
+    required: true,
+    type: [
+      {
+        deviceName: { type: String, required: true },
+        quantity: { type: Number, required: true },
+        status: { type: Boolean, default: true },
+      },
+    ],
+  })
+  device: { deviceName: string; quantity: number; status: boolean }[];
+
   @Prop()
   thumbnail: string;
 

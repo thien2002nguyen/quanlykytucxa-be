@@ -28,14 +28,12 @@ export function parseCSV(buffer: Buffer): Promise<StudentBase[]> {
           'Tên sinh viên',
           'Mã sinh viên',
           'Căn cước công dân',
-          'Số điện thoại',
-          'Email',
           'Ngày sinh',
           'Giới tính',
-          'Lớp học',
+          'Lớp',
           'Phòng - Khoa',
-          'Niên khóa',
           'Địa chỉ',
+          'Năm tuyển sinh',
         ];
 
         for (const field of requiredFields) {
@@ -104,10 +102,10 @@ export async function parseExcel(buffer: Buffer): Promise<StudentBase[]> {
       'Căn cước công dân',
       'Ngày sinh',
       'Giới tính',
-      'Lớp học',
+      'Lớp',
       'Phòng - Khoa',
-      'Niên khóa',
       'Địa chỉ',
+      'Năm tuyển sinh',
     ];
 
     for (const field of requiredFields) {
@@ -128,7 +126,7 @@ export async function parseExcel(buffer: Buffer): Promise<StudentBase[]> {
       nationalIdCard: studentData['Căn cước công dân'],
       dateOfBirth: studentData['Ngày sinh'],
       gender: studentData['Giới tính'],
-      takeClass: studentData['Lớp học'],
+      takeClass: studentData['Lớp'],
       department: studentData['Phòng - Khoa'],
       address: studentData['Địa chỉ'],
       enrollmentYear: studentData['Năm tuyển sinh'],

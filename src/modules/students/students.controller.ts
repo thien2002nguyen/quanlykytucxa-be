@@ -103,10 +103,10 @@ export class StudentsController {
     return { data, meta };
   }
 
-  @Get('auth-me')
+  @Get('infomation')
   @UseGuards(AuthGuard)
   @ApiOperation({
-    summary: 'Lấy thông tin cá nhân của sinh viên bằng access token',
+    summary: 'Lấy thông tin sinh viên bằng access token.',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -119,6 +119,24 @@ export class StudentsController {
   async findAuthMe(@Req() request: UserRequest): Promise<{ data: Student }> {
     const student = await this.studentsService.findAuthMe(request.auth.id);
     return { data: student };
+  }
+
+  @Get('total-student')
+  @UseGuards(AuthModeratorOrAdminGuard)
+  @ApiOperation({
+    summary: 'Lấy tổng số sinh viên.',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Tổng số sinh viên được trả về thành công.',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Không có bản ghi nào.',
+  })
+  async totalStudent(): Promise<{ data: number }> {
+    const total = await this.studentsService.totalStudent();
+    return { data: total };
   }
 
   @Post('import-file')

@@ -1,7 +1,13 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { RegisterDto } from './register.dto';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, IsEmail, IsEnum } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsEmail,
+  IsEnum,
+  IsBoolean,
+} from 'class-validator';
 import { RoleAuth } from '../interfaces/user.interface';
 
 export class UpdateUserDto extends PartialType(RegisterDto) {
@@ -48,9 +54,17 @@ export class UpdateUserDto extends PartialType(RegisterDto) {
   @ApiPropertyOptional({
     description: 'Quyền truy cập',
     example: RoleAuth.STUDENT,
-    enum: RoleAuth, // Cung cấp enum cho Swagger
+    enum: RoleAuth,
   })
   @IsOptional()
-  @IsEnum(RoleAuth) // Sử dụng IsEnum để validate role
+  @IsEnum(RoleAuth)
   role?: RoleAuth;
+
+  @ApiPropertyOptional({
+    description: 'Đã khóa',
+    example: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  isBlocked?: boolean;
 }

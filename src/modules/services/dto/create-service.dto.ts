@@ -1,5 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsPositive, IsString } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsPositive,
+  IsString,
+  IsArray,
+  ValidateNested,
+} from 'class-validator';
+import { Type } from 'class-transformer';
+import { ScheduleItemDto } from './schedule-item.dto'; // Import kiểu ScheduleItemDto
 
 export class CreateServiceDto {
   @ApiProperty({
@@ -18,4 +27,21 @@ export class CreateServiceDto {
   @IsNumber()
   @IsPositive()
   price: number;
+
+  @ApiProperty({
+    description: 'Đơn vị',
+    example: 'Kg',
+  })
+  @IsNotEmpty()
+  @IsString()
+  unit: string;
+
+  @ApiProperty({
+    description: 'Lịch trình của dịch vụ (ngày và giờ)',
+    type: [ScheduleItemDto],
+  })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ScheduleItemDto)
+  schedule: ScheduleItemDto[];
 }

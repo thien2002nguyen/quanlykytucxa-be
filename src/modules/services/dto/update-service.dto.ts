@@ -1,7 +1,15 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { CreateServiceDto } from './create-service.dto';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, IsNumber } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsNumber,
+  IsArray,
+  ValidateNested,
+} from 'class-validator';
+import { Type } from 'class-transformer';
+import { ScheduleItemDto } from './schedule-item.dto'; // Import kiểu ScheduleItemDto
 
 export class UpdateServiceDto extends PartialType(CreateServiceDto) {
   @ApiPropertyOptional({
@@ -19,4 +27,22 @@ export class UpdateServiceDto extends PartialType(CreateServiceDto) {
   @IsOptional()
   @IsNumber()
   price?: number;
+
+  @ApiPropertyOptional({
+    description: 'Đơn vị',
+    example: 'Kg',
+  })
+  @IsOptional()
+  @IsString()
+  unit?: string;
+
+  @ApiPropertyOptional({
+    description: 'Lịch trình của dịch vụ (ngày và giờ)',
+    type: [ScheduleItemDto],
+  })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ScheduleItemDto)
+  schedule?: ScheduleItemDto[];
 }

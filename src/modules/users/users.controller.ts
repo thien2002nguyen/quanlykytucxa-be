@@ -26,7 +26,11 @@ import { ResponseInterface } from 'src/interfaces/response.interface';
 import { AuthAdminGuard } from 'src/guards/adminAuth.guard';
 import { MetaPagination } from 'src/common/constant';
 import { RegisterDto } from './dto/register.dto';
-import { RegisterResponseInterface, User } from './interfaces/user.interface';
+import {
+  RegisterResponseInterface,
+  RoleAuth,
+  User,
+} from './interfaces/user.interface';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refreshToken.dto';
 import { AuthGuard } from 'src/guards/auth.guard';
@@ -35,6 +39,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UserRequest } from 'src/interfaces/request.inrterface';
 import { VerifyOtpDto } from './dto/verifyOtp.dto';
 import { ChangePasswordDto } from './dto/changePasswordDto.dto';
+import { CreateModeratorDto } from './dto/create-moderator.dto';
 
 @ApiBearerAuth()
 @ApiTags('users')
@@ -92,6 +97,24 @@ export class UsersController {
     return { data: user };
   }
 
+  @Post('moderator')
+  @ApiOperation({ summary: 'Tạo nhân viên mới.' })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Tạo nhân viên mới thành công.',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Dữ liệu đầu vào không hợp lệ.',
+  })
+  async createModerator(
+    @Body() createModeratorDto: CreateModeratorDto,
+  ): Promise<User> {
+    const moderator =
+      await this.usersService.createModerator(createModeratorDto);
+    return moderator;
+  }
+
   @Post('login')
   @ApiOperation({ summary: 'Đăng nhập tài khoản' })
   @ApiResponse({
@@ -137,7 +160,8 @@ export class UsersController {
   @Get()
   @UseGuards(AuthAdminGuard)
   @ApiOperation({
-    summary: 'Lấy danh sách tài khoản với phân trang và tìm kiếm',
+    summary:
+      'Lấy danh sách tài khoản với phân trang, tìm kiếm, và lọc theo role',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -163,11 +187,17 @@ export class UsersController {
     type: 'String',
     required: false,
   })
+  @ApiQuery({
+    name: 'role',
+    enum: RoleAuth,
+    required: false,
+  })
   async findUsers(
     @Query('page') page = 1,
     @Query('limit') limit = +process.env.LIMIT_RECORD || 10,
     @Query('search') search = '',
     @Query('sort') sort = 'desc',
+    @Query('role') role: RoleAuth = RoleAuth.STUDENT,
   ): Promise<{ data: User[]; meta: MetaPagination }> {
     const validSortDirections: Array<'asc' | 'desc'> = ['asc', 'desc'];
     const sortDirection = validSortDirections.includes(sort as 'asc' | 'desc')
@@ -179,6 +209,7 @@ export class UsersController {
       +limit,
       search,
       sortDirection,
+      role,
     );
     return { data, meta };
   }

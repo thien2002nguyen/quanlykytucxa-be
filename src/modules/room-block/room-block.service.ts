@@ -20,7 +20,7 @@ export class RoomBlockService {
   }
 
   async findRoomBlocks(): Promise<RoomBlock[]> {
-    return this.roomBlockModel.find();
+    return this.roomBlockModel.find().sort({ createdAt: -1 });
   }
 
   async findByIdRoomBlock(id: string): Promise<RoomBlock> {

@@ -7,6 +7,8 @@ import {
   IsNumber,
   IsArray,
   IsMongoId,
+  IsBoolean,
+  IsObject,
 } from 'class-validator';
 
 export class UpdateRoomDto extends PartialType(CreateRoomDto) {
@@ -39,7 +41,7 @@ export class UpdateRoomDto extends PartialType(CreateRoomDto) {
   maximumCapacity?: number;
 
   @ApiPropertyOptional({
-    description: 'Tầng',
+    description: 'Tầng của phòng',
     example: 1,
   })
   @IsOptional()
@@ -78,4 +80,24 @@ export class UpdateRoomDto extends PartialType(CreateRoomDto) {
   @IsArray()
   @IsString({ each: true })
   images?: string[];
+
+  @ApiPropertyOptional({
+    description: 'Danh sách thiết bị trong phòng',
+    example: [
+      { deviceName: 'Điều hòa', quantity: 2, status: true },
+      { deviceName: 'TV', quantity: 1, status: false },
+    ],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsObject({ each: true })
+  device?: { deviceName: string; quantity: number; status: boolean }[];
+
+  @ApiPropertyOptional({
+    description: 'Trạng thái hoạt động của phòng',
+    example: true,
+  })
+  @IsOptional()
+  @IsBoolean()
+  isActive?: boolean;
 }

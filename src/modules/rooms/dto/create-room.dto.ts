@@ -6,6 +6,10 @@ import {
   IsArray,
   IsOptional,
   IsMongoId,
+  IsBoolean,
+  IsInt,
+  Min,
+  IsObject,
 } from 'class-validator';
 
 export class CreateRoomDto {
@@ -31,6 +35,8 @@ export class CreateRoomDto {
   })
   @IsNotEmpty()
   @IsNumber()
+  @IsInt()
+  @Min(1)
   maximumCapacity: number;
 
   @ApiProperty({
@@ -39,6 +45,8 @@ export class CreateRoomDto {
   })
   @IsNotEmpty()
   @IsNumber()
+  @IsInt()
+  @Min(1)
   floor: number;
 
   @ApiProperty({
@@ -73,4 +81,24 @@ export class CreateRoomDto {
   @IsArray()
   @IsString({ each: true })
   images?: string[];
+
+  @ApiProperty({
+    description: 'Danh sách thiết bị trong phòng',
+    example: [
+      { deviceName: 'Điều hòa', quantity: 2, status: true },
+      { deviceName: 'TV', quantity: 1, status: false },
+    ],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsObject({ each: true })
+  device?: { deviceName: string; quantity: number; status: boolean }[];
+
+  @ApiProperty({
+    description: 'Trạng thái hoạt động của phòng',
+    example: true,
+  })
+  @IsOptional()
+  @IsBoolean()
+  isActive?: boolean;
 }

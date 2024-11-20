@@ -1,4 +1,10 @@
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
+
+export interface DeviceItem {
+  deviceName: string;
+  quantity: string;
+  status: boolean;
+}
 
 export interface Room extends Document {
   roomName: string;
@@ -6,7 +12,10 @@ export interface Room extends Document {
   description: string;
   maximumCapacity: number;
   floor: number;
-  status: string;
+  roomBlockId: Types.ObjectId;
+  roomTypeId: Types.ObjectId;
+  device: DeviceItem[];
   thumbnail?: string;
   images?: string[];
+  isActive: string;
 }

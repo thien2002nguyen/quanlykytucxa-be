@@ -19,7 +19,7 @@ export class BannerService {
   }
 
   async findBanners(): Promise<Banner[]> {
-    return this.bannerModel.find();
+    return this.bannerModel.find().sort({ createdAt: -1 });
   }
 
   async findByIdBanner(id: string): Promise<Banner> {

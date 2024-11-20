@@ -3,7 +3,7 @@ import { Document, Types } from 'mongoose';
 
 @Schema({ timestamps: true })
 export class Student extends Document {
-  @Prop({ type: Types.ObjectId, ref: 'User', unique: true })
+  @Prop({ type: Types.ObjectId, ref: 'User' })
   userId: string;
 
   @Prop({ required: true, unique: true })
@@ -18,7 +18,7 @@ export class Student extends Document {
   @Prop({ required: true })
   dateOfBirth: string;
 
-  @Prop({ default: 'male' })
+  @Prop({ default: 'NAM' })
   gender: string;
 
   @Prop({ required: true })

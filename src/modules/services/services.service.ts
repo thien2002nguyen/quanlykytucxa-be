@@ -20,7 +20,7 @@ export class ServicesService {
 
   async findServices(): Promise<Service[]> {
     // Lấy tất cả quản trị viên từ cơ sở dữ liệu
-    return this.serviceModel.find();
+    return this.serviceModel.find().sort({ createdAt: -1 });
   }
 
   async findByIdService(id: string): Promise<Service> {

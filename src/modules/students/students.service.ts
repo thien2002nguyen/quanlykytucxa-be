@@ -95,6 +95,10 @@ export class StudentsService {
     return student;
   }
 
+  async totalStudent(): Promise<number> {
+    return this.studentModel.find().countDocuments();
+  }
+
   async findByIdStudent(id: string): Promise<Student> {
     // Kiểm tra xem id có phải là một ObjectId hợp lệ không
     if (!isValidObjectId(id)) {
@@ -188,6 +192,8 @@ export class StudentsService {
     } catch (error) {
       // Type casting the error to MongoError
       const mongoError = error as MongoError;
+
+      console.log('mongoError: ', mongoError);
 
       if (mongoError.code === 11000) {
         throw new BadRequestException(

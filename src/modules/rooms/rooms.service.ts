@@ -94,7 +94,10 @@ export class RoomsService {
     const sortOptions = getSortOptions(sortDirections);
 
     // Tìm kiếm tài liệu
-    const query = this.roomModel.find(searchQuery);
+    const query = this.roomModel
+      .find(searchQuery)
+      .populate('roomBlockId', 'name')
+      .populate('roomTypeId', 'type price');
 
     // Đếm tổng số tài liệu phù hợp
     const total = await this.roomModel.countDocuments(searchQuery);
@@ -118,7 +121,10 @@ export class RoomsService {
     }
 
     // Tìm phòng theo ID
-    const room = await this.roomModel.findById(id);
+    const room = await this.roomModel
+      .findById(id)
+      .populate('roomBlockId', 'name')
+      .populate('roomTypeId', 'type price');
     if (!room) {
       // Nếu không tìm thấy, ném ra lỗi không tìm thấy
       throw new NotFoundException(`Không tìm thấy phòng với ID: ${id}`);
@@ -136,7 +142,10 @@ export class RoomsService {
 
     // Nếu không tìm thấy theo ID hoặc không phải ObjectId, tìm theo slug
     if (!room) {
-      room = await this.roomModel.findOne({ roomSlug: idOrSlug });
+      room = await this.roomModel
+        .findOne({ roomSlug: idOrSlug })
+        .populate('roomBlockId', 'name')
+        .populate('roomTypeId', 'type price');
     }
 
     // Nếu không tìm thấy cả theo ID và slug, ném ra lỗi
@@ -165,7 +174,7 @@ export class RoomsService {
         roomName,
       });
 
-      if (existingRoom) {
+      if (existingRoom && existingRoom._id.toString() !== id) {
         throw new BadRequestException({
           statusCode: HttpStatus.BAD_REQUEST,
           error: 'Bad Request',

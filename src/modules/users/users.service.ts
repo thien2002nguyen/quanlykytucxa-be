@@ -20,6 +20,7 @@ import {
   InsertUserInterface,
   LoginInterface,
   RegisterResponseInterface,
+  RoleAuth,
   User,
 } from './interfaces/user.interface';
 import { RegisterDto } from './dto/register.dto';
@@ -30,6 +31,7 @@ import { VerifyOtpDto } from './dto/verifyOtp.dto';
 import { ChangePasswordDto } from './dto/changePasswordDto.dto';
 import { Student } from '../students/interfaces/students.interface';
 import { mailOtp } from './sendOtpEmail';
+import { CreateModeratorDto } from './dto/create-moderator.dto';
 
 @Injectable()
 export class UsersService {
@@ -182,6 +184,40 @@ export class UsersService {
     return updateUser;
   }
 
+  async createModerator(createModeratorDto: CreateModeratorDto): Promise<User> {
+    const { userName, phoneNumber, email, password } = createModeratorDto;
+
+    // Kiểm tra tính duy nhất của userName, email, phoneNumber
+    const existingByUserName = await this.userModel.findOne({ userName });
+    if (existingByUserName) {
+      throw new BadRequestException('Tên đăng nhập đã tồn tại.');
+    }
+
+    const existingByEmail = await this.userModel.findOne({ email });
+    if (existingByEmail) {
+      throw new BadRequestException('Email đã tồn tại.');
+    }
+
+    const existingByPhone = await this.userModel.findOne({ phoneNumber });
+    if (existingByPhone) {
+      throw new BadRequestException('Số điện thoại đã tồn tại.');
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const moderator = await this.userModel.create({
+      ...createModeratorDto,
+      password: hashedPassword,
+      role: RoleAuth.MODERATOR,
+    });
+
+    const newModerator = moderator.toObject();
+    delete newModerator.password;
+
+    // Trả về thông tin nhân viên không có trường mật khẩu
+    return newModerator;
+  }
+
   async login({ userName, password }: LoginInterface): Promise<{
     data: User;
     token: {
@@ -278,15 +314,19 @@ export class UsersService {
     limit: number,
     search: string,
     sortDirection: 'asc' | 'desc' = 'desc',
+    role: RoleAuth = RoleAuth.STUDENT,
   ): Promise<{ data: User[]; meta: MetaPagination }> {
     // Xây dựng truy vấn tìm kiếm
-    const searchQuery = buildSearchQuery({
-      fields: ['userName'],
-      searchTerm: search,
-    });
+    const searchQuery = {
+      ...buildSearchQuery({
+        fields: ['userName'],
+        searchTerm: search,
+      }),
+      role,
+    };
 
     const sortDirections: { [field: string]: 'asc' | 'desc' } = {
-      createdAt: sortDirection, // Sử dụng 'asc' hoặc 'desc' để phân loại
+      createdAt: sortDirection,
     };
 
     // Xây dựng các tùy chọn phân trang
@@ -302,7 +342,6 @@ export class UsersService {
     const total = await this.userModel.countDocuments(searchQuery);
 
     // Phân trang và sắp xếp
-
     const users = await query
       .skip(skip)
       .limit(pageLimit)
