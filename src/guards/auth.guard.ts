@@ -29,8 +29,13 @@ export class AuthGuard implements CanActivate {
     const auth = await this.userModel
       .findById(payload.id)
       .select('-password -refreshToken');
+
     if (!auth) {
       throw new UnauthorizedException('Tài khoản không tồn tại.');
+    }
+
+    if (auth.isBlocked) {
+      throw new UnauthorizedException('Tài khoản đã bị khóa.');
     }
 
     // Đính kèm thông tin tài khoản vào request để sử dụng trong controller nếu cần

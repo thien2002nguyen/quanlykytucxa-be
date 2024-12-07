@@ -29,14 +29,6 @@ export class CreateServiceDto {
   price: number;
 
   @ApiProperty({
-    description: 'Đơn vị',
-    example: 'Kg',
-  })
-  @IsNotEmpty()
-  @IsString()
-  unit: string;
-
-  @ApiProperty({
     description: 'Lịch trình của dịch vụ (ngày và giờ)',
     type: [ScheduleItemDto],
   })

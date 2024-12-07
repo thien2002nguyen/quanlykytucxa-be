@@ -26,11 +26,7 @@ import { ResponseInterface } from 'src/interfaces/response.interface';
 import { AuthAdminGuard } from 'src/guards/adminAuth.guard';
 import { MetaPagination } from 'src/common/constant';
 import { RegisterDto } from './dto/register.dto';
-import {
-  RegisterResponseInterface,
-  RoleAuth,
-  User,
-} from './interfaces/user.interface';
+import { RoleAuth, User } from './interfaces/user.interface';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refreshToken.dto';
 import { AuthGuard } from 'src/guards/auth.guard';
@@ -40,6 +36,7 @@ import { UserRequest } from 'src/interfaces/request.inrterface';
 import { VerifyOtpDto } from './dto/verifyOtp.dto';
 import { ChangePasswordDto } from './dto/changePasswordDto.dto';
 import { CreateModeratorDto } from './dto/create-moderator.dto';
+import { SendOtpDto } from './dto/sendOtpDto.dto';
 
 @ApiBearerAuth()
 @ApiTags('users')
@@ -59,9 +56,9 @@ export class UsersController {
   })
   async register(
     @Body() registerDto: RegisterDto,
-  ): Promise<RegisterResponseInterface> {
-    const response = await this.usersService.register(registerDto);
-    return response;
+  ): Promise<{ message: string }> {
+    const message = await this.usersService.register(registerDto);
+    return { message };
   }
 
   @Post('verify-otp')
@@ -76,8 +73,9 @@ export class UsersController {
   })
   async verifyOtp(
     @Body() verifyOtpDto: VerifyOtpDto,
-  ): Promise<{ otpVerified: boolean; data: User }> {
-    return await this.usersService.verifyOtp(verifyOtpDto);
+  ): Promise<{ data: { otpVerified: boolean; otpAccessToken: string } }> {
+    const response = await this.usersService.verifyOtp(verifyOtpDto);
+    return { data: response };
   }
 
   @Post('change-password')
@@ -92,9 +90,24 @@ export class UsersController {
   })
   async changePassword(
     @Body() changePasswordDto: ChangePasswordDto,
-  ): Promise<{ data: any }> {
+  ): Promise<{ data: User }> {
     const user = await this.usersService.changePassword(changePasswordDto);
     return { data: user };
+  }
+
+  @Post('send-otp')
+  @ApiOperation({ summary: 'Lấy lại lã OTP.' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Lấy lại mã OTP.',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Người dùng không tồn tại hoặc thông tin không hợp lệ.',
+  })
+  async sendOtp(@Body() sendOtpDto: SendOtpDto): Promise<{ message: string }> {
+    const message = await this.usersService.sendOtp(sendOtpDto);
+    return { message };
   }
 
   @Post('moderator')

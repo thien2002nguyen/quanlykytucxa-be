@@ -19,19 +19,20 @@ import { MetaPagination } from 'src/common/constant';
 import {
   InsertUserInterface,
   LoginInterface,
-  RegisterResponseInterface,
   RoleAuth,
   User,
 } from './interfaces/user.interface';
 import { RegisterDto } from './dto/register.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as crypto from 'crypto';
+import * as jwt from 'jsonwebtoken';
 import { EmailService } from './email.service';
 import { VerifyOtpDto } from './dto/verifyOtp.dto';
 import { ChangePasswordDto } from './dto/changePasswordDto.dto';
 import { Student } from '../students/interfaces/students.interface';
 import { mailOtp } from './sendOtpEmail';
 import { CreateModeratorDto } from './dto/create-moderator.dto';
+import { SendOtpDto } from './dto/sendOtpDto.dto';
 
 @Injectable()
 export class UsersService {
@@ -42,41 +43,63 @@ export class UsersService {
   ) {}
 
   // Phương thức đăng ký người dùng
-  async register(registerDto: RegisterDto): Promise<RegisterResponseInterface> {
+  async register(registerDto: RegisterDto): Promise<string> {
     const { userName, phoneNumber, email, studentCode } = registerDto;
 
     // Kiểm tra tính duy nhất của userName, email, phoneNumber
-    const existingByUserName = await this.userModel.findOne({ userName });
-    if (existingByUserName) {
-      throw new BadRequestException('Tên đăng nhập đã tồn tại.');
-    }
-
-    const existingByEmail = await this.userModel.findOne({ email });
-    if (existingByEmail) {
-      throw new BadRequestException('Email đã tồn tại.');
-    }
-
-    const existingByPhone = await this.userModel.findOne({ phoneNumber });
-    if (existingByPhone) {
-      throw new BadRequestException('Số điện thoại đã tồn tại.');
-    }
-
-    // Kiểm tra sinh viên có trong danh sách sinh viên hay không
-    const existingByStudentCode = await this.studentModel.findOne({
-      studentCode,
+    const existingUser = await this.userModel.findOne({
+      $or: [{ userName }, { email }, { phoneNumber }],
     });
-    if (!existingByStudentCode) {
+
+    // Nếu tìm thấy tài khoản
+    if (existingUser) {
+      // Nếu tài khoản đã được xác thực (password tồn tại)
+      if (existingUser.password) {
+        throw new BadRequestException(
+          'Tài khoản đã tồn tại. Vui lòng đăng nhập.',
+        );
+      }
+
+      // Nếu tài khoản chưa xác thực (password trống), cập nhật OTP mới
+      const otp = crypto.randomInt(100000, 999999).toString();
+      const otpExpiration = Date.now() + 5 * 60 * 1000;
+
+      existingUser.userName = userName;
+      existingUser.email = email;
+      existingUser.phoneNumber = phoneNumber;
+      existingUser.otp = otp;
+      existingUser.otpExpiration = otpExpiration;
+      await existingUser.save();
+
+      // Gửi OTP qua email
+      await this.emailService.sendOtpEmail({
+        to: email,
+        title: 'Xác thực Email - Mã OTP - Quản lý ký túc xá',
+        content: mailOtp(otp),
+      });
+
+      return 'OTP đã được gửi lại tới email của bạn. Vui lòng kiểm tra và nhập mã OTP để hoàn tất đăng ký.';
+    }
+
+    // Kiểm tra mã sinh viên có trong danh sách sinh viên không
+    const student = await this.studentModel.findOne({ studentCode });
+    if (!student) {
       throw new BadRequestException(
         'Mã sinh viên không tồn tại trong hệ thống. Vui lòng kiểm tra lại mã sinh viên hoặc liên hệ bộ phận hỗ trợ sinh viên để được giúp đỡ.',
       );
     }
 
+    if (student && student.userId) {
+      throw new BadRequestException(
+        'Tài khoản đã tồn tại. Vui lòng đăng nhập.',
+      );
+    }
+
     // Tạo OTP ngẫu nhiên
     const otp = crypto.randomInt(100000, 999999).toString();
+    const otpExpiration = Date.now() + 5 * 60 * 1000;
 
-    // Lưu OTP vào cơ sở dữ liệu, ví dụ trong collection `user`
-    const otpExpiration = Date.now() + 5 * 60 * 1000; // Hết hạn sau 5 phút
-
+    // Tạo tài khoản mới
     await this.userModel.create({
       ...registerDto,
       otp,
@@ -90,36 +113,18 @@ export class UsersService {
       content: mailOtp(otp),
     });
 
-    // Trả về thông báo yêu cầu người dùng nhập OTP
-    return {
-      message:
-        'OTP đã được gửi tới email của bạn. Vui lòng kiểm tra và nhập mã OTP để hoàn tất đăng ký.',
-      data: {
-        email,
-        studentCode,
-      },
-    };
+    return 'OTP đã được gửi tới email của bạn. Vui lòng kiểm tra và nhập mã OTP để hoàn tất đăng ký.';
   }
 
   // Phương thức xác thực OTP
   async verifyOtp(verifyOtpDto: VerifyOtpDto): Promise<{
     otpVerified: boolean;
-    data: User;
+    otpAccessToken: string;
   }> {
     const user = await this.userModel.findOne({ email: verifyOtpDto.email });
 
-    const student = await this.studentModel.findOne({
-      studentCode: verifyOtpDto.studentCode,
-    });
-
     if (!user) {
       throw new BadRequestException('Người dùng không tồn tại');
-    }
-
-    if (!student) {
-      throw new BadRequestException(
-        'Mã sinh viên không tồn tại trong hệ thống. Vui lòng kiểm tra lại mã sinh viên hoặc liên hệ bộ phận hỗ trợ sinh viên để được giúp đỡ.',
-      );
     }
 
     // Kiểm tra OTP và thời gian hết hạn
@@ -131,57 +136,131 @@ export class UsersService {
       throw new BadRequestException('Mã OTP đã hết hạn');
     }
 
-    // Kiểm tra sinh viên đã có tài khoản hay chưa
-    if (student.userId) {
+    const student = await this.studentModel.findOne({
+      studentCode: verifyOtpDto.studentCode,
+    });
+
+    if (!student) {
       throw new BadRequestException(
-        'Sinh viên đã có tài khoản. Vui lòng đăng nhập.',
+        'Mã sinh viên không tồn tại trong hệ thống. Vui lòng kiểm tra lại mã sinh viên hoặc liên hệ bộ phận hỗ trợ sinh viên để được giúp đỡ.',
       );
     }
 
-    // Cập nhật id tài khoản vào student
-    const updateStudent = await this.studentModel.findOneAndUpdate(
-      { studentCode: verifyOtpDto.studentCode },
-      { userId: user._id },
+    if (!student.userId) {
+      // Kiểm tra sinh viên chưa có tài khoản
+      // Cập nhật id tài khoản vào student
+      const updateStudent = await this.studentModel.findOneAndUpdate(
+        { studentCode: verifyOtpDto.studentCode },
+        { userId: user._id },
+        { new: true },
+      );
+
+      if (!updateStudent) {
+        throw new BadRequestException('Cập nhật thông tin sinh viên thất bại.');
+      }
+    }
+
+    const otpAccessToken = jwt.sign(
+      {
+        email: user.email,
+      },
+      process.env.SECRET_KEY || 'nguyencanhthien', // Khóa bí mật cho JWT
+      { expiresIn: '1h' }, // Token hết hạn sau 1 giờ
+    );
+
+    // Xóa OTP sau khi xác thực thành công
+    const updateUser = await this.userModel.findOneAndUpdate(
+      { email: verifyOtpDto.email },
+      { otp: null, otpExpiration: null, otpAccessToken },
       { new: true },
     );
 
-    if (!updateStudent) {
+    if (!updateUser) {
       throw new BadRequestException('Đã có lỗi xảy ra. Vui lòng thử lại sau.');
     }
 
-    // Xóa OTP sau khi xác thực thành công
-    const updateUser = await this.userModel
-      .findOneAndUpdate(
-        { email: verifyOtpDto.email },
-        { otp: null, otpExpiration: null },
-        { new: true },
-      )
-      .select('-refreshToken -password -otp -otpExpiration');
-
-    return { otpVerified: true, data: updateUser };
+    return { otpVerified: true, otpAccessToken };
   }
 
   // Phương thức đổi mật khẩu người dùng
   async changePassword(changePasswordDto: ChangePasswordDto): Promise<User> {
-    const user = await this.userModel.findOne({
-      email: changePasswordDto.email,
-    });
+    try {
+      const verifyToken = jwt.verify(
+        changePasswordDto.otpAccessToken,
+        process.env.SECRET_KEY || 'nguyencanhthien',
+      ) as { email: string };
+
+      const user = await this.userModel.findOne({
+        email: verifyToken.email,
+      });
+
+      if (!user) {
+        throw new NotFoundException('Người dùng không tồn tại');
+      }
+
+      if (user && user.otpAccessToken !== changePasswordDto.otpAccessToken) {
+        throw new BadRequestException('Token không hợp lệ.');
+      }
+
+      if (user && user.isBlocked) {
+        throw new UnauthorizedException('Tài khoản đã bị khóa.');
+      }
+
+      const hashedPassword = await bcrypt.hash(changePasswordDto.password, 10);
+
+      // Lưu thông tin người dùng vào cơ sở dữ liệu
+      const updateUser = await this.userModel
+        .findOneAndUpdate(
+          { email: verifyToken.email },
+          { password: hashedPassword, otpAccessToken: null },
+        )
+        .select('-refreshToken -password -otp -otpExpiration -otpAccessToken');
+
+      return updateUser;
+    } catch (error: any) {
+      if (error.name === 'TokenExpiredError') {
+        throw new UnauthorizedException('Token đã hết hạn. Vui lòng thử lại.');
+      } else {
+        throw new BadRequestException('Token không hợp lệ.');
+      }
+    }
+  }
+
+  // Phương thức lấy mã OTP
+  async sendOtp(sendOtpDto: SendOtpDto): Promise<string> {
+    const { email } = sendOtpDto;
+
+    const user = await this.userModel.findOne({ email });
 
     if (!user) {
-      throw new BadRequestException('Người dùng không tồn tại');
+      throw new NotFoundException('Không tìm thấy tài khoản.');
     }
 
-    const hashedPassword = await bcrypt.hash(changePasswordDto.password, 10);
+    // Tạo OTP ngẫu nhiên
+    const otp = crypto.randomInt(100000, 999999).toString();
+    const otpExpiration = Date.now() + 5 * 60 * 1000;
 
-    // Lưu thông tin người dùng vào cơ sở dữ liệu
-    const updateUser = await this.userModel
-      .findOneAndUpdate(
-        { email: changePasswordDto.email },
-        { password: hashedPassword },
-      )
-      .select('-refreshToken -password -otp -otpExpiration');
+    // Gửi OTP qua email
+    await this.emailService.sendOtpEmail({
+      to: email,
+      title: 'Xác thực Email - Mã OTP - Quản lý ký túc xá',
+      content: mailOtp(otp),
+    });
 
-    return updateUser;
+    const updateUser = await this.userModel.findOneAndUpdate(
+      { email },
+      {
+        otp,
+        otpExpiration,
+      },
+      { new: true },
+    );
+
+    if (!updateUser) {
+      throw new BadRequestException('Đã có lỗi xảy ra. Vui lòng thử lại sau.');
+    }
+
+    return 'OTP đã được gửi tới email của bạn.';
   }
 
   async createModerator(createModeratorDto: CreateModeratorDto): Promise<User> {
@@ -239,6 +318,10 @@ export class UsersService {
       });
     }
 
+    if (user.isBlocked) {
+      throw new BadRequestException('Tài khoản đã bị khóa.');
+    }
+
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       throw new BadRequestException({
@@ -290,6 +373,15 @@ export class UsersService {
         error: 'Unauthorized',
         message: 'Không tìm thấy tài khoản.',
         messageCode: 'USER_NOT_FOUND',
+      });
+    }
+
+    if (user.isBlocked) {
+      throw new UnauthorizedException({
+        statusCode: HttpStatus.UNAUTHORIZED,
+        error: 'Unauthorized',
+        message: 'Tài khoản đã bị khóa.',
+        messageCode: 'USER_IS_BLOCKED',
       });
     }
 

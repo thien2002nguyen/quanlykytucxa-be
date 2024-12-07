@@ -6,10 +6,15 @@ interface SearchOptions {
 export function buildSearchQuery(options: SearchOptions) {
   const { fields, searchTerm } = options;
 
-  // Tạo điều kiện tìm kiếm cho tất cả các trường
-  const searchQuery = fields.reduce((query, field) => {
-    return { ...query, [field]: { $regex: searchTerm, $options: 'i' } };
-  }, {});
+  if (!searchTerm) {
+    return {}; // Trả về truy vấn rỗng nếu không có từ khóa
+  }
 
-  return searchQuery;
+  // Tạo mảng các điều kiện tìm kiếm
+  const orConditions = fields.map((field) => ({
+    [field]: { $regex: searchTerm, $options: 'i' },
+  }));
+
+  // Kết hợp các điều kiện với `$or`
+  return { $or: orConditions };
 }

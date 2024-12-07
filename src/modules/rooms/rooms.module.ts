@@ -14,5 +14,6 @@ import { RoomBlockModule } from '../room-block/room-block.module';
   ],
   controllers: [RoomsController],
   providers: [RoomsService],
+  exports: [MongooseModule], // Export để module khác có thể sử dụng
 })
 export class RoomsModule {}

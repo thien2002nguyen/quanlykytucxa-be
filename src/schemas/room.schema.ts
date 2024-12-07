@@ -1,5 +1,5 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
-import { IsBoolean } from 'class-validator';
+import { IsBoolean, IsNumber } from 'class-validator';
 import { Document, Types } from 'mongoose';
 
 @Schema({ timestamps: true })
@@ -46,6 +46,10 @@ export class Room extends Document {
   @Prop({ default: true })
   @IsBoolean()
   isActive: boolean;
+
+  @Prop({ default: 0 })
+  @IsNumber()
+  registeredStudents: number;
 }
 
 export const RoomSchema = SchemaFactory.createForClass(Room);

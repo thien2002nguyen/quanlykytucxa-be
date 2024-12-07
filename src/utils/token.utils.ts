@@ -1,3 +1,4 @@
+import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import * as jwt from 'jsonwebtoken';
 import { RoleAuth } from 'src/modules/users/interfaces/user.interface';
 
@@ -33,8 +34,11 @@ export function generateAccessToken(id: string, role: RoleAuth) {
 export function verifyToken(token: string): TokenPayload | null {
   try {
     return jwt.verify(token, SECRET_KEY) as { id: string; role: RoleAuth };
-  } catch (error) {
-    console.error('Đã xảy ra lỗi:', error);
-    return null;
+  } catch (error: any) {
+    if (error.name === 'TokenExpiredError') {
+      throw new UnauthorizedException('Token đã hết hạn. Vui lòng thử lại.');
+    } else {
+      throw new BadRequestException('Token không hợp lệ.');
+    }
   }
 }

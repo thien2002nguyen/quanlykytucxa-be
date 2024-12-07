@@ -9,11 +9,13 @@ import {
   Patch,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -55,8 +57,15 @@ export class BannerController {
     status: HttpStatus.OK,
     description: 'Danh sách banner.',
   })
-  async findBanners(): Promise<{ data: Banner[] }> {
-    const banners = await this.bannerService.findBanners();
+  @ApiQuery({
+    name: 'isClient',
+    type: Boolean,
+    required: false,
+  })
+  async findBanners(
+    @Query('isClient') isClient: boolean = false,
+  ): Promise<{ data: Banner[] }> {
+    const banners = await this.bannerService.findBanners(isClient);
     return { data: banners };
   }
 

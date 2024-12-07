@@ -9,9 +9,6 @@ export class Service extends Document {
   @Prop({ required: true })
   price: number;
 
-  @Prop({ required: true })
-  unit: string;
-
   @Prop({
     required: true,
     type: [

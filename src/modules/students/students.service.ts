@@ -54,7 +54,7 @@ export class StudentsService {
   ): Promise<{ data: Student[]; meta: MetaPagination }> {
     // Xây dựng truy vấn tìm kiếm
     const searchQuery = buildSearchQuery({
-      fields: ['fullName'],
+      fields: ['fullName', 'studentCode'],
       searchTerm: search,
     });
 

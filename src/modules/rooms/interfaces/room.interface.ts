@@ -6,6 +6,12 @@ export interface DeviceItem {
   status: boolean;
 }
 
+export enum FilterRoomEnum {
+  ALL = 'all',
+  AVAILABLE = 'available',
+  FULL = 'full',
+}
+
 export interface Room extends Document {
   roomName: string;
   roomSlug: string;
@@ -17,5 +23,6 @@ export interface Room extends Document {
   device: DeviceItem[];
   thumbnail?: string;
   images?: string[];
-  isActive: string;
+  isActive: boolean;
+  registeredStudents: number;
 }

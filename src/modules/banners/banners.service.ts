@@ -18,8 +18,15 @@ export class BannerService {
     return newBanner;
   }
 
-  async findBanners(): Promise<Banner[]> {
-    return this.bannerModel.find().sort({ createdAt: -1 });
+  async findBanners(isClient: boolean = false): Promise<Banner[]> {
+    const query: { [key: string]: any } = {};
+
+    // Thêm điều kiện lọc nếu isClient = true
+    if (isClient) {
+      query.isActive = true;
+    }
+
+    return this.bannerModel.find(query).sort({ createdAt: -1 });
   }
 
   async findByIdBanner(id: string): Promise<Banner> {

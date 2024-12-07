@@ -29,14 +29,6 @@ export class UpdateServiceDto extends PartialType(CreateServiceDto) {
   price?: number;
 
   @ApiPropertyOptional({
-    description: 'Đơn vị',
-    example: 'Kg',
-  })
-  @IsOptional()
-  @IsString()
-  unit?: string;
-
-  @ApiPropertyOptional({
     description: 'Lịch trình của dịch vụ (ngày và giờ)',
     type: [ScheduleItemDto],
   })

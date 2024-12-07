@@ -1,14 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class ChangePasswordDto {
   @ApiProperty({
-    description: 'Email',
-    example: 'nguyencanhthien785@gmail.com',
+    description: 'OTP Xác thực',
+    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
   })
   @IsNotEmpty()
-  @IsEmail()
-  email: string;
+  @IsString()
+  otpAccessToken: string;
 
   @ApiProperty({
     description: 'Mật khẩu',

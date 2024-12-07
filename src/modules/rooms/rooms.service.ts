@@ -5,8 +5,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { isValidObjectId, Model, Types } from 'mongoose';
-import { Room } from './interfaces/room.interface';
+import { Model, Types } from 'mongoose';
+import { FilterRoomEnum, Room } from './interfaces/room.interface';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { buildSearchQuery } from 'src/utils/search.utils';
 import { paginateQuery } from 'src/utils/pagination.utils';
@@ -76,12 +76,27 @@ export class RoomsService {
     limit: number,
     search: string,
     sortDirection: 'asc' | 'desc' = 'desc',
+    filter: FilterRoomEnum = FilterRoomEnum.ALL, // Mặc định là all
+    isClient: boolean = false,
   ): Promise<{ data: Room[]; meta: MetaPagination }> {
     // Xây dựng truy vấn tìm kiếm
-    const searchQuery = buildSearchQuery({
+    const searchQuery: { [key: string]: any } = buildSearchQuery({
       fields: ['roomName'],
       searchTerm: search,
     });
+
+    // Thêm điều kiện lọc nếu isClient = true
+    if (isClient) {
+      searchQuery.isActive = true;
+    }
+
+    // Thêm điều kiện lọc theo `filter`
+    if (filter === 'available') {
+      searchQuery.$expr = { $lt: ['$registeredStudents', '$maximumCapacity'] }; // Phòng còn trống
+    } else if (filter === 'full') {
+      searchQuery.$expr = { $gte: ['$registeredStudents', '$maximumCapacity'] }; // Phòng đầy
+    }
+    // Nếu filter === 'all', không cần thêm điều kiện vào searchQuery.
 
     const sortDirections: { [field: string]: 'asc' | 'desc' } = {
       createdAt: sortDirection, // Sử dụng 'asc' hoặc 'desc' để phân loại
@@ -114,30 +129,15 @@ export class RoomsService {
     return { data: rooms, meta };
   }
 
-  async findByIdRoom(id: string): Promise<Room> {
-    // Kiểm tra xem id có phải là một ObjectId hợp lệ không
-    if (!isValidObjectId(id)) {
-      throw new NotFoundException(`ID ${id} không hợp lệ.`);
-    }
-
-    // Tìm phòng theo ID
-    const room = await this.roomModel
-      .findById(id)
-      .populate('roomBlockId', 'name')
-      .populate('roomTypeId', 'type price');
-    if (!room) {
-      // Nếu không tìm thấy, ném ra lỗi không tìm thấy
-      throw new NotFoundException(`Không tìm thấy phòng với ID: ${id}`);
-    }
-    return room;
-  }
-
   async findOneRoom(idOrSlug: string): Promise<Room> {
     // Kiểm tra xem idOrSlug có phải là một ObjectId hợp lệ hay không
     let room;
     if (Types.ObjectId.isValid(idOrSlug)) {
       // Nếu là ObjectId hợp lệ, tìm kiếm theo ID
-      room = await this.roomModel.findById(idOrSlug);
+      room = await this.roomModel
+        .findById(idOrSlug)
+        .populate('roomBlockId', 'name')
+        .populate('roomTypeId', 'type price');
     }
 
     // Nếu không tìm thấy theo ID hoặc không phải ObjectId, tìm theo slug
@@ -150,9 +150,12 @@ export class RoomsService {
 
     // Nếu không tìm thấy cả theo ID và slug, ném ra lỗi
     if (!room) {
-      throw new NotFoundException(
-        `Không tìm thấy phòng với ID hoặc slug: ${idOrSlug}`,
-      );
+      throw new NotFoundException({
+        statusCode: HttpStatus.NOT_FOUND,
+        error: 'Not Found',
+        message: 'Không tìm thấy phòng.',
+        messageCode: 'ROOM_NOT_FOUND',
+      });
     }
 
     return room;

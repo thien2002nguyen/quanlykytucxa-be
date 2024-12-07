@@ -12,5 +12,6 @@ import { Service, ServiceSchema } from 'src/schemas/service.schema';
   ],
   controllers: [ServicesController],
   providers: [ServicesService],
+  exports: [MongooseModule], // Export để module khác có thể sử dụng
 })
 export class ServicesModule {}

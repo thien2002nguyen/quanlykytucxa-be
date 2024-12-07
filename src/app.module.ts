@@ -15,6 +15,11 @@ import { BannersModule } from './modules/banners/banners.module';
 import { IntroductionModule } from './modules/introduction/introduction.module';
 import { UnitPriceModule } from './modules/unit-price/unit-price.module';
 import { UsersModule } from './modules/users/users.module';
+import { NewsModule } from './modules/news/news.module';
+import { InfomationModule } from './modules/infomation/infomation.module';
+import { ContractTermsModule } from './modules/contract-terms/contract-terms.module';
+import { ContractTypesModule } from './modules/contract-types/contract-types.module';
+import { ContractsModule } from './modules/contracts/contracts.module';
 
 @Module({
   imports: [
@@ -37,6 +42,11 @@ import { UsersModule } from './modules/users/users.module';
     BannersModule,
     IntroductionModule,
     UnitPriceModule,
+    NewsModule,
+    InfomationModule,
+    ContractTermsModule,
+    ContractTypesModule,
+    ContractsModule,
   ],
   providers: [DatabaseService],
 })

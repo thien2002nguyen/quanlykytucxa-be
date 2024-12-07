@@ -20,7 +20,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { CreateRoomDto } from './dto/create-room.dto';
-import { Room } from './interfaces/room.interface';
+import { FilterRoomEnum, Room } from './interfaces/room.interface';
 import { UpdateRoomDto } from './dto/update-room.dto';
 import { ResponseInterface } from 'src/interfaces/response.interface';
 import { MetaPagination } from 'src/common/constant';
@@ -51,8 +51,9 @@ export class RoomsController {
   }
 
   @Get()
+  @UseGuards(AuthModeratorOrAdminGuard)
   @ApiOperation({
-    summary: 'Lấy danh sách phòng với phân trang và tìm kiếm',
+    summary: 'Lấy danh sách phòng với phân trang, tìm kiếm và lọc',
   })
   @ApiResponse({ status: HttpStatus.OK, description: 'Danh sách phòng.' })
   @ApiQuery({
@@ -72,7 +73,18 @@ export class RoomsController {
   })
   @ApiQuery({
     name: 'sort',
-    type: 'String',
+    type: String,
+    required: false,
+  })
+  @ApiQuery({
+    name: 'filter',
+    type: String,
+    required: false,
+    enum: FilterRoomEnum, // Thêm trạng thái all
+  })
+  @ApiQuery({
+    name: 'isClient',
+    type: Boolean,
     required: false,
   })
   async findRooms(
@@ -80,6 +92,8 @@ export class RoomsController {
     @Query('limit') limit = +process.env.LIMIT_RECORD || 10,
     @Query('search') search = '',
     @Query('sort') sort = 'desc',
+    @Query('filter') filter: FilterRoomEnum = FilterRoomEnum.ALL, // Mặc định là all
+    @Query('isClient') isClient: boolean = false,
   ): Promise<{ data: Room[]; meta: MetaPagination }> {
     const validSortDirections: Array<'asc' | 'desc'> = ['asc', 'desc'];
     const sortDirection = validSortDirections.includes(sort as 'asc' | 'desc')
@@ -91,11 +105,13 @@ export class RoomsController {
       +limit,
       search,
       sortDirection,
+      filter,
+      isClient,
     );
     return { data, meta };
   }
 
-  @Get('find-one/:idOrSlug')
+  @Get(':idOrSlug')
   @ApiOperation({ summary: 'Lấy thông tin phòng theo ID hoặc Slug' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Chi tiết phòng.' })
   @ApiResponse({
@@ -106,19 +122,6 @@ export class RoomsController {
     @Param('idOrSlug') idOrSlug: string,
   ): Promise<{ data: Room }> {
     const room = await this.roomsService.findOneRoom(idOrSlug);
-    return { data: room };
-  }
-
-  @Get(':id')
-  @UseGuards(AuthModeratorOrAdminGuard)
-  @ApiOperation({ summary: 'Lấy thông tin phòng theo ID' })
-  @ApiResponse({ status: HttpStatus.OK, description: 'Chi tiết phòng.' })
-  @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
-    description: 'Không tìm thấy phòng.',
-  })
-  async findByIdRoom(@Param('id') id: string): Promise<{ data: Room }> {
-    const room = await this.roomsService.findByIdRoom(id);
     return { data: room };
   }
 

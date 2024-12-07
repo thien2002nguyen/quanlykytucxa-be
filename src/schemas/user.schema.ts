@@ -33,6 +33,9 @@ export class User extends Document {
 
   @Prop()
   otpExpiration: number;
+
+  @Prop()
+  otpAccessToken: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

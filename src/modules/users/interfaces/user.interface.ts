@@ -17,6 +17,7 @@ export interface User extends Document {
   isBlocked: boolean;
   otp?: string;
   otpExpiration?: number;
+  otpAccessToken?: string;
 }
 
 export interface InsertUserInterface {
@@ -31,12 +32,4 @@ export interface InsertUserInterface {
 export interface LoginInterface {
   userName: string;
   password: string;
-}
-
-export interface RegisterResponseInterface {
-  message: string;
-  data: {
-    email: string;
-    studentCode: string;
-  };
 }

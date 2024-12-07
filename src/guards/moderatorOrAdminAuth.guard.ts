@@ -34,6 +34,10 @@ export class AuthModeratorOrAdminGuard implements CanActivate {
       throw new UnauthorizedException('Tài khoản không tồn tại.');
     }
 
+    if (auth.isBlocked) {
+      throw new UnauthorizedException('Tài khoản đã bị khóa.');
+    }
+
     // Kiểm tra vai trò trong token
     if (payload.role === RoleAuth.STUDENT) {
       throw new ForbiddenException('Bạn không có quyền truy cập.');
