@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { isValidObjectId, Model } from 'mongoose';
+import { isValidObjectId, Model, Types } from 'mongoose';
 import { MongoError } from 'mongodb';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
@@ -17,11 +17,17 @@ import { getSortOptions } from 'src/utils/sort.utils';
 import { ResponseInterface } from 'src/interfaces/response.interface';
 import { MetaPagination } from 'src/common/constant';
 import { parseCSV, parseExcel } from 'src/helpers/file-parser.utils';
+import {
+  Contract,
+  StatusEnum,
+} from '../contracts/interfaces/contracts.interface';
+import * as dayjs from 'dayjs';
 
 @Injectable()
 export class StudentsService {
   constructor(
     @InjectModel('Student') private readonly studentModel: Model<Student>,
+    @InjectModel('Contract') private readonly contractModel: Model<Contract>,
   ) {}
 
   async createStudent(createStudentDto: CreateStudentDto): Promise<Student> {
@@ -88,9 +94,52 @@ export class StudentsService {
   }
 
   async findAuthMe(id: string): Promise<Student> {
+    const userObjectId = new Types.ObjectId(id); // Chuyển đổi từ string sang ObjectId
     const student = await this.studentModel
-      .findOne({ userId: id })
-      .populate('userId', 'userName email phoneNumber');
+      .findOne({ userId: userObjectId })
+      .populate('userId', 'userName email phoneNumber')
+      .populate({
+        path: 'roomId',
+        populate: ['roomTypeId', 'roomBlockId'],
+      })
+      .populate({
+        path: 'contractId',
+        populate: [
+          'service.serviceId',
+          {
+            path: 'room.roomId',
+            populate: ['roomTypeId', 'roomBlockId'],
+          },
+          'term.termId',
+          'contractType',
+          {
+            path: 'adminId',
+            select: 'userName email phoneNumber',
+          },
+        ],
+      });
+
+    if (student.contractId) {
+      const contract = await this.contractModel.findById(student.contractId);
+      if (!contract) {
+        throw new BadRequestException(
+          `Không tìm thấy hợp đồng với ID: ${student.contractId}`,
+        );
+      }
+
+      const now = dayjs(); // Ngày hiện tại
+      const endDate = dayjs(contract.endDate); // Chuyển đổi `contract.endDate` thành dayjs
+
+      // Kiểm tra nếu hợp đồng quá hạn và cập nhật trạng thái nếu cần
+      if (
+        endDate.isBefore(now) &&
+        (contract.status === StatusEnum.CONFIRMED ||
+          contract.status === StatusEnum.PENDING_CANCELLATION)
+      ) {
+        contract.status = StatusEnum.EXPIRED; // Cập nhật trạng thái thành 'quá hạn'
+        await contract.save(); // Lưu thông tin đã thay đổi vào database
+      }
+    }
 
     return student;
   }
@@ -133,7 +182,7 @@ export class StudentsService {
 
       if (!student) {
         // Nếu không tìm thấy, ném ra lỗi không tìm thấy
-        throw new NotFoundException(`Không tìm thấy sinh viên với ID ${id}`);
+        throw new NotFoundException(`Không tìm thấy sinh viên với ID: ${id}`);
       }
 
       return student;

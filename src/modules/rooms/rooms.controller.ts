@@ -51,7 +51,6 @@ export class RoomsController {
   }
 
   @Get()
-  @UseGuards(AuthModeratorOrAdminGuard)
   @ApiOperation({
     summary: 'Lấy danh sách phòng với phân trang, tìm kiếm và lọc',
   })
@@ -87,6 +86,11 @@ export class RoomsController {
     type: Boolean,
     required: false,
   })
+  @ApiQuery({
+    name: 'roomTypeId',
+    type: String,
+    required: false,
+  })
   async findRooms(
     @Query('page') page = 1,
     @Query('limit') limit = +process.env.LIMIT_RECORD || 10,
@@ -94,6 +98,7 @@ export class RoomsController {
     @Query('sort') sort = 'desc',
     @Query('filter') filter: FilterRoomEnum = FilterRoomEnum.ALL, // Mặc định là all
     @Query('isClient') isClient: boolean = false,
+    @Query('roomTypeId') roomTypeId = '',
   ): Promise<{ data: Room[]; meta: MetaPagination }> {
     const validSortDirections: Array<'asc' | 'desc'> = ['asc', 'desc'];
     const sortDirection = validSortDirections.includes(sort as 'asc' | 'desc')
@@ -107,6 +112,7 @@ export class RoomsController {
       sortDirection,
       filter,
       isClient,
+      roomTypeId,
     );
     return { data, meta };
   }

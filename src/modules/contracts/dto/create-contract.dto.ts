@@ -3,13 +3,18 @@ import {
   IsNotEmpty,
   IsString,
   IsArray,
-  IsEnum,
   IsObject,
+  IsEmail,
 } from 'class-validator';
+import { Types } from 'mongoose';
 import { TimeUnitEnum } from 'src/modules/contract-types/interfaces/contract-types.interface';
-import { StatusEnum } from 'src/modules/contracts/interfaces/contracts.interface';
 
 export class CreateContractDto {
+  @ApiProperty({ description: 'Họ tên sinh viên', example: 'Nguyễn Văn A' })
+  @IsNotEmpty()
+  @IsString()
+  fullName: string;
+
   @ApiProperty({
     description: 'Mã sinh viên của hợp đồng',
     example: 'SV12345',
@@ -17,6 +22,23 @@ export class CreateContractDto {
   @IsNotEmpty()
   @IsString()
   studentCode: string;
+
+  @ApiProperty({
+    description: 'Email',
+    example: 'nguyencanhthien785@gmail.com',
+  })
+  @IsNotEmpty()
+  @IsEmail()
+  email: string;
+
+  @ApiProperty({
+    description: 'Số điện thoại',
+    example: '+1234567890',
+  })
+  @IsNotEmpty()
+  @IsString()
+  phoneNumber: string;
+
   @ApiProperty({
     description: 'Thông tin phòng thuê',
     example: {
@@ -27,9 +49,10 @@ export class CreateContractDto {
   @IsNotEmpty()
   @IsObject()
   room: {
-    roomId: string;
+    roomId: Types.ObjectId;
     price: number;
   };
+
   @ApiProperty({
     description: 'Dịch vụ',
     type: [Object],
@@ -44,7 +67,7 @@ export class CreateContractDto {
   @IsArray()
   @IsNotEmpty()
   service: {
-    serviceId: string;
+    serviceId: Types.ObjectId;
     name: string;
     price: number;
   }[];
@@ -62,7 +85,7 @@ export class CreateContractDto {
   @IsArray()
   @IsNotEmpty()
   term: {
-    termId: string;
+    termId: Types.ObjectId;
     content: string;
   }[];
 
@@ -81,12 +104,4 @@ export class CreateContractDto {
     duration: number;
     unit: TimeUnitEnum;
   };
-
-  @ApiProperty({
-    description: 'Trạng thái của hợp đồng',
-    example: StatusEnum.PENDING,
-  })
-  @IsNotEmpty()
-  @IsEnum(StatusEnum)
-  status: StatusEnum;
 }

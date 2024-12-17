@@ -56,6 +56,7 @@ export class NewsController {
     );
     return { data: news };
   }
+
   @Get()
   @ApiOperation({
     summary: 'Lấy danh sách bài viết với phân trang và tìm kiếm',

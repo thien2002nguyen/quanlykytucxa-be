@@ -9,6 +9,7 @@ import {
   Post,
   Put,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { ContractsService } from './contracts.service';
@@ -20,11 +21,13 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { CreateContractDto } from './dto/create-contract.dto';
-import { UpdateContractDto } from './dto/update-contract.dto';
 import { Contract } from './interfaces/contracts.interface';
 import { MetaPagination } from 'src/common/constant';
 import { AuthModeratorOrAdminGuard } from 'src/guards/moderatorOrAdminAuth.guard';
 import { StatusEnum } from './interfaces/contracts.interface';
+import { AuthGuard } from 'src/guards/auth.guard';
+import { UserRequest } from 'src/interfaces/request.inrterface';
+import { CreateServiceContractDto } from './dto/create-service-contract.dto';
 
 @ApiBearerAuth()
 @ApiTags('contracts')
@@ -33,7 +36,7 @@ export class ContractsController {
   constructor(private readonly contractsService: ContractsService) {}
 
   @Post()
-  @UseGuards(AuthModeratorOrAdminGuard)
+  @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Tạo hợp đồng mới' })
   @ApiResponse({
     status: HttpStatus.CREATED,
@@ -52,6 +55,7 @@ export class ContractsController {
   }
 
   @Get()
+  @UseGuards(AuthModeratorOrAdminGuard)
   @ApiOperation({
     summary: 'Lấy danh sách hợp đồng với phân trang, tìm kiếm và lọc',
   })
@@ -115,8 +119,14 @@ export class ContractsController {
     status: HttpStatus.NOT_FOUND,
     description: 'Không tìm thấy hợp đồng.',
   })
-  async confirmContract(@Param('id') id: string): Promise<{ data: Contract }> {
-    const contract = await this.contractsService.confirmContract(id);
+  async confirmContract(
+    @Req() request: UserRequest,
+    @Param('id') id: string,
+  ): Promise<{ data: Contract }> {
+    const contract = await this.contractsService.confirmContract(
+      id,
+      request.auth.id,
+    );
     return { data: contract };
   }
 
@@ -164,6 +174,102 @@ export class ContractsController {
     return { data: contract };
   }
 
+  @Put(':id/check-in-date')
+  @UseGuards(AuthModeratorOrAdminGuard)
+  @ApiOperation({ summary: 'Cập nhật ngày nhận phòng' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Cập nhật ngày nhận phòng thành công.',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Không tìm thấy hợp đồng.',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Trạng thái hợp đồng không cho phép cập nhật ngày nhận phòng.',
+  })
+  async updateCheckInDate(
+    @Param('id') id: string,
+  ): Promise<{ data: Contract }> {
+    const contract = await this.contractsService.updateCheckInDate(id);
+    return { data: contract };
+  }
+
+  @Put(':id/check-out-date')
+  @UseGuards(AuthModeratorOrAdminGuard)
+  @ApiOperation({ summary: 'Cập nhật ngày trả phòng' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Cập nhật ngày trả phòng thành công.',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Không tìm thấy hợp đồng.',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Chưa nhận phòng.',
+  })
+  async updateCheckOutDate(
+    @Param('id') id: string,
+  ): Promise<{ data: Contract }> {
+    const contract = await this.contractsService.updateCheckOutDate(id);
+    return { data: contract };
+  }
+
+  @Post(':contractId/register-room-service')
+  @UseGuards(AuthModeratorOrAdminGuard)
+  @ApiOperation({ summary: 'Đăng ký dịch vụ phòng' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Đăng ký dịch vụ thành công.',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Không tìm thấy hợp đồng.',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Dữ liệu không hợp lệ.',
+  })
+  async addServiceToContract(
+    @Param('contractId') contractId: string,
+    @Body() createServiceDto: CreateServiceContractDto,
+  ): Promise<{ data: Contract }> {
+    const updatedContract = await this.contractsService.addService(
+      contractId,
+      createServiceDto,
+    );
+    return { data: updatedContract };
+  }
+
+  @Delete(':contractId/remove-service/:serviceId')
+  @UseGuards(AuthModeratorOrAdminGuard)
+  @ApiOperation({ summary: 'Hủy dịch vụ trong hợp đồng' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Hủy dịch vụ thành công.',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Không tìm thấy hợp đồng hoặc dịch vụ.',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Dữ liệu không hợp lệ.',
+  })
+  async removeServiceFromContract(
+    @Param('contractId') contractId: string,
+    @Param('serviceId') serviceId: string,
+  ): Promise<{ data: Contract }> {
+    const updatedContract = await this.contractsService.removeService(
+      contractId,
+      serviceId,
+    );
+    return { data: updatedContract };
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Lấy thông tin hợp đồng theo ID' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Chi tiết hợp đồng.' })
@@ -173,28 +279,6 @@ export class ContractsController {
   })
   async findByIdContract(@Param('id') id: string): Promise<{ data: Contract }> {
     const contract = await this.contractsService.findByIdContract(id);
-    return { data: contract };
-  }
-
-  @Put(':id')
-  @UseGuards(AuthModeratorOrAdminGuard)
-  @ApiOperation({ summary: 'Cập nhật thông tin hợp đồng theo ID' })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Chi tiết hợp đồng đã được cập nhật.',
-  })
-  @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
-    description: 'Không tìm thấy hợp đồng.',
-  })
-  async updateContract(
-    @Param('id') id: string,
-    @Body() updateContractDto: UpdateContractDto,
-  ): Promise<{ data: Contract }> {
-    const contract = await this.contractsService.updateContract(
-      id,
-      updateContractDto,
-    );
     return { data: contract };
   }
 

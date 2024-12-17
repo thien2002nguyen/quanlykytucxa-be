@@ -78,6 +78,7 @@ export class RoomsService {
     sortDirection: 'asc' | 'desc' = 'desc',
     filter: FilterRoomEnum = FilterRoomEnum.ALL, // Mặc định là all
     isClient: boolean = false,
+    roomTypeId: string,
   ): Promise<{ data: Room[]; meta: MetaPagination }> {
     // Xây dựng truy vấn tìm kiếm
     const searchQuery: { [key: string]: any } = buildSearchQuery({
@@ -97,6 +98,11 @@ export class RoomsService {
       searchQuery.$expr = { $gte: ['$registeredStudents', '$maximumCapacity'] }; // Phòng đầy
     }
     // Nếu filter === 'all', không cần thêm điều kiện vào searchQuery.
+
+    // Thêm điều kiện tìm kiếm theo roomTypeId
+    if (roomTypeId) {
+      searchQuery.roomTypeId = roomTypeId; // Tìm kiếm theo ObjectId
+    }
 
     const sortDirections: { [field: string]: 'asc' | 'desc' } = {
       createdAt: sortDirection, // Sử dụng 'asc' hoặc 'desc' để phân loại

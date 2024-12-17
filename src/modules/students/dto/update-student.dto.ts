@@ -1,8 +1,8 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { CreateStudentDto } from './create-student.dto';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, IsMongoId, IsBoolean } from 'class-validator';
-import { Types } from 'mongoose';
+import { IsOptional, IsString } from 'class-validator';
+import { GenderEnum } from '../interfaces/students.interface';
 
 export class UpdateStudentDto extends PartialType(CreateStudentDto) {
   @ApiPropertyOptional({ description: 'Mã sinh viên', example: 'S12345' })
@@ -34,10 +34,10 @@ export class UpdateStudentDto extends PartialType(CreateStudentDto) {
   @IsString()
   dateOfBirth?: string;
 
-  @ApiPropertyOptional({ description: 'Giới tính', example: 'male' })
+  @ApiPropertyOptional({ description: 'Giới tính', example: GenderEnum.nam })
   @IsOptional()
   @IsString()
-  gender?: string;
+  gender?: GenderEnum;
 
   @ApiPropertyOptional({ description: 'Lớp học', example: 'Lớp 10A1' })
   @IsOptional()
@@ -67,28 +67,4 @@ export class UpdateStudentDto extends PartialType(CreateStudentDto) {
   @IsOptional()
   @IsString()
   enrollmentYear?: string;
-
-  @ApiPropertyOptional({
-    description: 'ID phòng của sinh viên',
-    example: '64b6f0c4f62e8b1f12345678',
-  })
-  @IsOptional()
-  @IsMongoId()
-  roomId?: Types.ObjectId;
-
-  @ApiPropertyOptional({
-    description: 'Ảnh đại diện của sinh viên',
-    example: 'image.png',
-  })
-  @IsOptional()
-  @IsString()
-  avatar?: string;
-
-  @ApiPropertyOptional({
-    description: 'Tình trạng tài khoản',
-    example: false,
-  })
-  @IsOptional()
-  @IsBoolean()
-  isBlocked?: boolean;
 }

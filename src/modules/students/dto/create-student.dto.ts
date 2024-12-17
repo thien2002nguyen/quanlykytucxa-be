@@ -1,6 +1,12 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsOptional, IsMongoId } from 'class-validator';
-import { Types } from 'mongoose';
+import { ApiProperty } from '@nestjs/swagger';
+import {
+  IsNotEmpty,
+  IsString,
+  IsOptional,
+  IsMongoId,
+  IsEnum,
+} from 'class-validator';
+import { GenderEnum } from '../interfaces/students.interface';
 
 export class CreateStudentDto {
   @ApiProperty({
@@ -34,10 +40,14 @@ export class CreateStudentDto {
   @IsString()
   dateOfBirth: string;
 
-  @ApiProperty({ description: 'Giới tính của sinh viên', example: 'male' })
+  @ApiProperty({
+    description: 'Giới tính của sinh viên',
+    example: GenderEnum.nam,
+    enum: GenderEnum,
+  })
   @IsOptional()
-  @IsString()
-  gender?: string;
+  @IsEnum(GenderEnum)
+  gender?: GenderEnum;
 
   @ApiProperty({ description: 'Lớp học của sinh viên', example: 'Lớp 10A1' })
   @IsNotEmpty()
@@ -67,12 +77,4 @@ export class CreateStudentDto {
   @IsNotEmpty()
   @IsString()
   enrollmentYear: string;
-
-  @ApiPropertyOptional({
-    description: 'ID phòng của sinh viên',
-    example: '64b6f0c4f62e8b1f12345678',
-  })
-  @IsOptional()
-  @IsMongoId()
-  roomId?: Types.ObjectId;
 }

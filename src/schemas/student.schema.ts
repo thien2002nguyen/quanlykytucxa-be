@@ -1,5 +1,6 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
+import { GenderEnum } from 'src/modules/students/interfaces/students.interface';
 
 @Schema({ timestamps: true })
 export class Student extends Document {
@@ -18,8 +19,8 @@ export class Student extends Document {
   @Prop({ required: true })
   dateOfBirth: string;
 
-  @Prop({ default: 'NAM' })
-  gender: string;
+  @Prop({ default: GenderEnum.nam })
+  gender: GenderEnum;
 
   @Prop({ required: true })
   takeClass: string; // lớp
@@ -35,6 +36,9 @@ export class Student extends Document {
 
   @Prop({ type: Types.ObjectId, ref: 'Room' })
   roomId: Types.ObjectId; // ở phòng
+
+  @Prop({ type: Types.ObjectId, ref: 'Contract' })
+  contractId: Types.ObjectId; // hợp đồng phòng ở
 }
 
 export const StudentSchema = SchemaFactory.createForClass(Student);

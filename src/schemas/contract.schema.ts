@@ -6,12 +6,21 @@ import { StatusEnum } from 'src/modules/contracts/interfaces/contracts.interface
 @Schema({ timestamps: true })
 export class Contract extends Document {
   @Prop({ required: true })
+  fullName: string;
+
+  @Prop({ required: true })
   studentCode: string;
+
+  @Prop({ required: true })
+  phoneNumber: string;
+
+  @Prop({ required: true })
+  email: string;
 
   @Prop({
     required: true,
     type: {
-      roomId: { type: Types.ObjectId, required: true },
+      roomId: { type: Types.ObjectId, ref: 'Room', required: true },
       price: { type: Number, required: true },
     },
   })
@@ -21,15 +30,10 @@ export class Contract extends Document {
     required: true,
     type: [
       {
-        serviceId: { type: Types.ObjectId, required: true },
+        serviceId: { type: Types.ObjectId, ref: 'Service', required: true },
         name: { type: String, required: true },
         price: { type: Number, required: true },
-        status: {
-          type: String, // Chỉnh sửa kiểu thành String
-          enum: Object.values(StatusEnum), // Chỉ định enum từ StatusEnum
-          default: StatusEnum.PENDING, // Giá trị mặc định là 'pending'
-        },
-        confirmedAt: { type: String },
+        createdAt: { type: String },
       },
     ],
   })
@@ -37,16 +41,14 @@ export class Contract extends Document {
     serviceId: Types.ObjectId;
     name: string;
     price: number;
-    unit: string;
-    status: StatusEnum;
-    confirmedAt: string;
+    createdAt: string;
   }[];
 
   @Prop({
     required: true,
     type: [
       {
-        termId: { type: Types.ObjectId, required: true },
+        termId: { type: Types.ObjectId, ref: 'ContractTerm', required: true },
         content: { type: String, required: true },
       },
     ],
@@ -56,7 +58,11 @@ export class Contract extends Document {
   @Prop({
     required: true,
     type: {
-      contractTypeId: { type: Types.ObjectId, required: true },
+      contractTypeId: {
+        type: Types.ObjectId,
+        ref: 'ContractType',
+        required: true,
+      },
       duration: { type: Number, required: true },
       unit: { type: String, enum: Object.values(TimeUnitEnum), required: true },
     },
@@ -82,6 +88,15 @@ export class Contract extends Document {
     default: StatusEnum.PENDING,
   })
   status: StatusEnum; // Đảm bảo rằng 'status' là kiểu String với enum đúng
+
+  @Prop()
+  approvedDate?: string; // Ngày duyệt hợp đồng
+
+  @Prop()
+  checkInDate?: string; // Ngày nhận phòng
+
+  @Prop()
+  checkOutDate?: string; // Ngày trả phòng
 }
 
 export const ContractSchema = SchemaFactory.createForClass(Contract);

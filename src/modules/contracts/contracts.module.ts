@@ -22,5 +22,6 @@ import { ContractTermsModule } from '../contract-terms/contract-terms.module';
   ],
   controllers: [ContractsController],
   providers: [ContractsService],
+  exports: [MongooseModule], // Export để module khác có thể sử dụng
 })
 export class ContractsModule {}

@@ -1,11 +1,13 @@
 import { Document, Types } from 'mongoose';
 import { TimeUnitEnum } from 'src/modules/contract-types/interfaces/contract-types.interface';
+import { Student } from 'src/modules/students/interfaces/students.interface';
 
 export enum StatusEnum {
   PENDING = 'pending', // Đang chờ xác nhận
   CONFIRMED = 'confirmed', // Đã xác nhận
   PENDING_CANCELLATION = 'pending_cancellation', // Đang chờ hủy
   CANCELLED = 'cancelled', // Đã hủy
+  EXPIRED = 'expired', // Đã hết hạn'
 }
 // Interface cho Room
 export interface RoomInterface {
@@ -19,8 +21,7 @@ export interface ServiceInterface {
   serviceId: Types.ObjectId;
   name: string;
   price: number;
-  status: StatusEnum;
-  confirmedAt?: string; // Giá trị này có thể không bắt buộc
+  createdAt?: string;
 }
 
 // Interface cho Term
@@ -38,13 +39,20 @@ export interface ContractTypeInterface {
 
 // Interface chính cho Contract
 export interface Contract extends Document {
+  fullName: string;
   studentCode: string;
+  email: string;
+  phoneNumber: string;
+  studentInfomation?: Student;
   room: RoomInterface;
   service: ServiceInterface[];
   terms: TermInterface[];
-  contractType: ContractTypeInterface; // Đảm bảo đúng cấu trúc của `contractType`
-  startDate?: string; // Giá trị này có thể không bắt buộc
-  endDate?: string; // Giá trị này có thể không bắt buộc
-  adminId?: Types.ObjectId; // Quản trị viên có thể không được chỉ định
+  contractType: ContractTypeInterface;
+  startDate?: string;
+  endDate?: string;
+  adminId?: Types.ObjectId;
   status: StatusEnum;
+  approvedDate?: string; // Ngày duyệt hợp đồng
+  checkInDate?: string; // Ngày nhận phòng
+  checkOutDate?: string; // Ngày trả phòng
 }
