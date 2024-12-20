@@ -1,3 +1,4 @@
+import { ChangePasswordByUserDto } from './dto/changePasswordByUserDto';
 import { ResponseInterface } from '../../interfaces/response.interface';
 import {
   BadRequestException,
@@ -539,6 +540,62 @@ export class UsersService {
       statusCode: HttpStatus.ACCEPTED,
       message: `Xóa tài khoản với ID ${id} đã được xóa thành công.`,
       messageCode: 'DELETE_SUCCESS',
+    };
+  }
+
+  // Phương thức đổi mật khẩu người dùng
+  async changePasswordByUser(
+    idUser: string,
+    changePasswordByUserDto: ChangePasswordByUserDto,
+  ): Promise<ResponseInterface> {
+    // Tìm người dùng theo id
+    const user = await this.userModel.findById(idUser);
+
+    if (!user) {
+      throw new UnauthorizedException({
+        error: 'Người dùng không tồn tại',
+        message: 'Người dùng không tồn tại trong hệ thống',
+        messageCode: 'USER_NOT_FOUND',
+      });
+    }
+
+    // Kiểm tra xem tài khoản có bị khóa không
+    if (user.isBlocked) {
+      throw new UnauthorizedException({
+        error: 'Tài khoản đã bị khóa',
+        message: 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ hỗ trợ.',
+        messageCode: 'USER_BLOCKED',
+      });
+    }
+
+    // Xác thực mật khẩu cũ
+    const isOldPasswordValid = await bcrypt.compare(
+      changePasswordByUserDto.oldPassword,
+      user.password,
+    );
+
+    if (!isOldPasswordValid) {
+      throw new BadRequestException({
+        error: 'Mật khẩu cũ không chính xác',
+        message: 'Vui lòng kiểm tra lại mật khẩu cũ.',
+        messageCode: 'INVALID_OLD_PASSWORD',
+      });
+    }
+
+    // Hash mật khẩu mới
+    const hashedNewPassword = await bcrypt.hash(
+      changePasswordByUserDto.newPassword,
+      10,
+    );
+
+    // Cập nhật mật khẩu mới
+    user.password = hashedNewPassword;
+    await user.save();
+
+    return {
+      statusCode: 200,
+      message: 'Thay đổi mật khẩu thành công.',
+      messageCode: 'PASSWORD_CHANGED_SUCCESS',
     };
   }
 }

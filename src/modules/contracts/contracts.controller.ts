@@ -131,7 +131,7 @@ export class ContractsController {
   }
 
   @Put(':id/request-cancel')
-  @UseGuards(AuthModeratorOrAdminGuard)
+  @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Gửi yêu cầu hủy hợp đồng' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -150,6 +150,30 @@ export class ContractsController {
     @Param('id') id: string,
   ): Promise<{ data: Contract }> {
     const contract = await this.contractsService.requestCancelContract(id);
+    return { data: contract };
+  }
+
+  @Put(':id/remove-request-cancel')
+  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Xóa yêu cầu hủy hợp đồng' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Xóa yêu cầu hủy hợp đồng thành công.',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Không tìm thấy hợp đồng.',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description:
+      'Hợp đồng không thể hủy do trạng thái hiện tại không cho phép.',
+  })
+  async removeRequestCancelContract(
+    @Param('id') id: string,
+  ): Promise<{ data: Contract }> {
+    const contract =
+      await this.contractsService.removeRequestCancelContract(id);
     return { data: contract };
   }
 
@@ -175,7 +199,7 @@ export class ContractsController {
   }
 
   @Put(':id/check-in-date')
-  @UseGuards(AuthModeratorOrAdminGuard)
+  @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Cập nhật ngày nhận phòng' })
   @ApiResponse({
     status: HttpStatus.OK,

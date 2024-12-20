@@ -20,6 +20,7 @@ import { InfomationModule } from './modules/infomation/infomation.module';
 import { ContractTermsModule } from './modules/contract-terms/contract-terms.module';
 import { ContractTypesModule } from './modules/contract-types/contract-types.module';
 import { ContractsModule } from './modules/contracts/contracts.module';
+import { PaymentsModule } from './modules/payments/payments.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { ContractsModule } from './modules/contracts/contracts.module';
     ContractTermsModule,
     ContractTypesModule,
     ContractsModule,
+    PaymentsModule,
   ],
   providers: [DatabaseService],
 })

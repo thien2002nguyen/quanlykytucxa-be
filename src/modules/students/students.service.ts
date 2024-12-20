@@ -111,7 +111,7 @@ export class StudentsService {
             populate: ['roomTypeId', 'roomBlockId'],
           },
           'term.termId',
-          'contractType',
+          'contractType.contractTypeId',
           {
             path: 'adminId',
             select: 'userName email phoneNumber',

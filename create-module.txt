@@ -1,5 +1,5 @@
-nest generate module modules/contract-types --no-spec
-nest generate controller modules/contract-types --no-spec
-nest generate service modules/contract-types --no-spec
+nest generate module modules/payments --no-spec
+nest generate controller modules/payments --no-spec
+nest generate service modules/payments --no-spec
 
 nest generate provider modules/upload --no-spec

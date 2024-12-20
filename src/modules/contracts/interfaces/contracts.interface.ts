@@ -46,7 +46,7 @@ export interface Contract extends Document {
   studentInfomation?: Student;
   room: RoomInterface;
   service: ServiceInterface[];
-  terms: TermInterface[];
+  term: TermInterface[];
   contractType: ContractTypeInterface;
   startDate?: string;
   endDate?: string;

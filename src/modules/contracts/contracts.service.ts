@@ -524,6 +524,30 @@ export class ContractsService {
     return contract;
   }
 
+  async removeRequestCancelContract(id: string): Promise<Contract> {
+    const contract = await this.contractModel.findById(id);
+    if (!contract) {
+      throw new NotFoundException('Không tìm thấy hợp đồng.');
+    }
+
+    // Kiểm tra trạng thái hợp đồng có cho phép hủy không
+    if (contract.status !== StatusEnum.PENDING_CANCELLATION) {
+      throw new BadRequestException({
+        statusCode: HttpStatus.BAD_REQUEST,
+        error: 'Bad Request',
+        message:
+          'Hợp đồng không thể hủy do trạng thái hiện tại không cho phép.',
+        messageCode: 'CONTRACT_CANNOT_BE_PENDING_CANCELLATION',
+      });
+    }
+
+    // Cập nhật trạng thái hợp đồng thành CONFIRMED
+    contract.status = StatusEnum.CONFIRMED;
+    await contract.save();
+
+    return contract;
+  }
+
   async cancelContract(id: string): Promise<Contract> {
     const contract = await this.contractModel.findById(id);
     if (!contract) {

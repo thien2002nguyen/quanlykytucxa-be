@@ -14,5 +14,6 @@ import { RoomType, RoomTypeSchema } from 'src/schemas/room-type.schema';
   ],
   controllers: [RoomTypeController],
   providers: [RoomTypeService],
+  exports: [MongooseModule], // Export để module khác có thể sử dụng
 })
 export class RoomTypeModule {}

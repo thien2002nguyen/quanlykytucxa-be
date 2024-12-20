@@ -37,6 +37,7 @@ import { VerifyOtpDto } from './dto/verifyOtp.dto';
 import { ChangePasswordDto } from './dto/changePasswordDto.dto';
 import { CreateModeratorDto } from './dto/create-moderator.dto';
 import { SendOtpDto } from './dto/sendOtpDto.dto';
+import { ChangePasswordByUserDto } from './dto/changePasswordByUserDto';
 
 @ApiBearerAuth()
 @ApiTags('users')
@@ -246,6 +247,30 @@ export class UsersController {
 
     // Trả về thông tin tài khoản
     return { data: auth };
+  }
+
+  @Post('change-password/user')
+  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Thay đổi mật khẩu người dùng.' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Hoàn tất thay đổi mật khẩu người dùng.',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Người dùng không tồn tại hoặc thông tin không hợp lệ.',
+  })
+  async changePasswordByUser(
+    @Req() request: UserRequest,
+    @Body() changePasswordByUserDto: ChangePasswordByUserDto,
+  ): Promise<{ data: ResponseInterface }> {
+    const { id } = request.auth;
+
+    const response = await this.usersService.changePasswordByUser(
+      id,
+      changePasswordByUserDto,
+    );
+    return { data: response };
   }
 
   @Post('insert-user/example')
