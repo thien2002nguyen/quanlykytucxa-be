@@ -22,12 +22,16 @@ import {
   StatusEnum,
 } from '../contracts/interfaces/contracts.interface';
 import * as dayjs from 'dayjs';
+import { Service } from '../services/interfaces/service.interface';
+import { Room } from '../rooms/interfaces/room.interface';
 
 @Injectable()
 export class StudentsService {
   constructor(
     @InjectModel('Student') private readonly studentModel: Model<Student>,
     @InjectModel('Contract') private readonly contractModel: Model<Contract>,
+    @InjectModel('Service') private readonly serviceModel: Model<Service>,
+    @InjectModel('Room') private readonly roomModel: Model<Room>,
   ) {}
 
   async createStudent(createStudentDto: CreateStudentDto): Promise<Student> {
@@ -105,13 +109,12 @@ export class StudentsService {
       .populate({
         path: 'contractId',
         populate: [
-          'service.serviceId',
+          'services.serviceId',
           {
-            path: 'room.roomId',
+            path: 'roomId',
             populate: ['roomTypeId', 'roomBlockId'],
           },
-          'term.termId',
-          'contractType.contractTypeId',
+          'contractTypeId',
           {
             path: 'adminId',
             select: 'userName email phoneNumber',
@@ -121,10 +124,13 @@ export class StudentsService {
 
     if (student.contractId) {
       const contract = await this.contractModel.findById(student.contractId);
+      const room = await this.roomModel.findById(student.roomId);
+
       if (!contract) {
-        throw new BadRequestException(
-          `Không tìm thấy hợp đồng với ID: ${student.contractId}`,
-        );
+        student.contractId = undefined;
+        student.roomId = undefined;
+        await student.save();
+        return;
       }
 
       const now = dayjs(); // Ngày hiện tại
@@ -136,8 +142,37 @@ export class StudentsService {
         (contract.status === StatusEnum.CONFIRMED ||
           contract.status === StatusEnum.PENDING_CANCELLATION)
       ) {
+        student.contractId = undefined; // Cập nhật lại thông tin sinh viên
+        student.roomId = undefined;
+        await student.save();
+
+        room.registeredStudents -= 1;
+        room.save();
+
         contract.status = StatusEnum.EXPIRED; // Cập nhật trạng thái thành 'quá hạn'
         await contract.save(); // Lưu thông tin đã thay đổi vào database
+      }
+
+      // Xác định kiểu cho mảng invalidServices
+      const invalidServices: Types.ObjectId[] = []; // Đây là mảng lưu các serviceId không tồn tại
+
+      for (const service of contract.services) {
+        const serviceExists = await this.serviceModel.exists({
+          _id: service.serviceId,
+        });
+
+        if (!serviceExists) {
+          invalidServices.push(service.serviceId); // Sử dụng service.serviceId thay vì _id
+        }
+      }
+
+      if (invalidServices.length > 0) {
+        // Lọc bỏ các dịch vụ không tồn tại khỏi mảng services
+        contract.services = contract.services.filter(
+          (service) => !invalidServices.includes(service.serviceId), // Sử dụng service.serviceId thay vì _id
+        );
+
+        await contract.save(); // Lưu thay đổi vào cơ sở dữ liệu
       }
     }
 

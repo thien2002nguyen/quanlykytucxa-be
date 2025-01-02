@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsMongoId, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsMongoId, IsNotEmpty } from 'class-validator';
 import { Types } from 'mongoose';
 
 export class CreateServiceContractDto {
@@ -10,20 +10,4 @@ export class CreateServiceContractDto {
   @IsMongoId()
   @IsNotEmpty()
   serviceId: Types.ObjectId;
-
-  @ApiProperty({
-    description: 'Tên dịch vụ',
-    example: 'Dịch vụ dọn vệ sinh',
-  })
-  @IsString()
-  @IsNotEmpty()
-  name: string;
-
-  @ApiProperty({
-    description: 'Giá dịch vụ',
-    example: 50000,
-  })
-  @IsNumber()
-  @IsNotEmpty()
-  price: number;
 }

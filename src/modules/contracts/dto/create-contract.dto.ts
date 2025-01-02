@@ -3,11 +3,10 @@ import {
   IsNotEmpty,
   IsString,
   IsArray,
-  IsObject,
   IsEmail,
+  IsMongoId,
 } from 'class-validator';
 import { Types } from 'mongoose';
-import { TimeUnitEnum } from 'src/modules/contract-types/interfaces/contract-types.interface';
 
 export class CreateContractDto {
   @ApiProperty({ description: 'Họ tên sinh viên', example: 'Nguyễn Văn A' })
@@ -40,68 +39,33 @@ export class CreateContractDto {
   phoneNumber: string;
 
   @ApiProperty({
-    description: 'Thông tin phòng thuê',
-    example: {
-      roomId: '507f1f77bcf86cd799439011',
-      price: 2000000,
-    },
+    description: 'Mã phòng thuê',
+    example: '507f1f77bcf86cd799439011',
   })
   @IsNotEmpty()
-  @IsObject()
-  room: {
-    roomId: Types.ObjectId;
-    price: number;
-  };
+  @IsMongoId()
+  roomId: Types.ObjectId;
 
   @ApiProperty({
-    description: 'Dịch vụ',
+    description: 'Mã các dịch vụ',
     type: [Object],
     example: [
       {
         serviceId: '507f1f77bcf86cd799439012',
-        name: 'Dịch vụ dọn vệ sinh',
-        price: 50000,
       },
     ],
   })
-  @IsArray()
   @IsNotEmpty()
-  service: {
+  @IsArray()
+  services: {
     serviceId: Types.ObjectId;
-    name: string;
-    price: number;
   }[];
 
   @ApiProperty({
-    description: 'Điều khoản hợp đồng',
-    type: [Object],
-    example: [
-      {
-        termId: '507f1f77bcf86cd799439013',
-        content: 'Điều khoản thanh toán theo tháng',
-      },
-    ],
-  })
-  @IsArray()
-  @IsNotEmpty()
-  term: {
-    termId: Types.ObjectId;
-    content: string;
-  }[];
-
-  @ApiProperty({
-    description: 'Thông tin loại hợp đồng',
-    example: {
-      contractTypeId: '507f1f77bcf86cd799439014',
-      duration: 12,
-      unit: TimeUnitEnum.MONTH,
-    },
+    description: 'Mã loại hợp đồng',
+    example: '507f1f77bcf86cd799439014',
   })
   @IsNotEmpty()
-  @IsObject()
-  contractType: {
-    contractTypeId: string;
-    duration: number;
-    unit: TimeUnitEnum;
-  };
+  @IsMongoId()
+  contractTypeId: Types.ObjectId;
 }

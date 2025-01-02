@@ -21,6 +21,7 @@ import { ContractTermsModule } from './modules/contract-terms/contract-terms.mod
 import { ContractTypesModule } from './modules/contract-types/contract-types.module';
 import { ContractsModule } from './modules/contracts/contracts.module';
 import { PaymentsModule } from './modules/payments/payments.module';
+import { IncidentsModule } from './modules/incidents/incidents.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { PaymentsModule } from './modules/payments/payments.module';
     ContractTypesModule,
     ContractsModule,
     PaymentsModule,
+    IncidentsModule,
   ],
   providers: [DatabaseService],
 })

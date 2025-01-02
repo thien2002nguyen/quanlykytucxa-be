@@ -74,4 +74,22 @@ export class UpdateSchoolDto {
   @IsOptional()
   @IsString()
   timeWork?: string;
+
+  // Thêm các trường nội quy và hướng dẫn dưới dạng editor
+  @ApiPropertyOptional({
+    description: 'Nội quy quy định của ký túc xá',
+    example: '<p>Trường hợp vi phạm sẽ bị xử lý nghiêm khắc.</p>',
+  })
+  @IsOptional()
+  @IsString()
+  rulesAndRegulations?: string;
+
+  @ApiPropertyOptional({
+    description: 'Hướng dẫn',
+    example:
+      '<p>Vui lòng làm theo các hướng dẫn dưới đây để đăng ký phòng.</p>',
+  })
+  @IsOptional()
+  @IsString()
+  guidelines?: string;
 }

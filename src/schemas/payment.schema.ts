@@ -20,6 +20,9 @@ export class Payment extends Document {
   @Prop({ required: true })
   email: string;
 
+  @Prop({ type: Types.ObjectId, ref: 'Contract', required: true })
+  contractId: Types.ObjectId;
+
   @Prop({
     required: true,
     type: {
@@ -51,23 +54,12 @@ export class Payment extends Document {
       },
     ],
   })
-  service: {
+  services: {
     serviceId: Types.ObjectId;
     name: string;
     price: number;
     createdAt: string;
   }[];
-
-  @Prop({
-    required: true,
-    type: [
-      {
-        termId: { type: Types.ObjectId, ref: 'ContractTerm', required: true },
-        content: { type: String, required: true },
-      },
-    ],
-  })
-  term: { termId: Types.ObjectId; content: string }[];
 
   @Prop({
     required: true,
@@ -89,8 +81,14 @@ export class Payment extends Document {
     unit: TimeUnitEnum;
   };
 
-  @Prop({ required: true })
+  @Prop({ type: Number, default: 0 })
   totalAmount: number;
+
+  @Prop({ type: Number, default: 0 })
+  remainingAmount: number;
+
+  @Prop({ type: Number, default: 0 })
+  paidAmount: number;
 
   @Prop({ type: Types.ObjectId, ref: 'User' })
   adminId: Types.ObjectId;
@@ -103,16 +101,65 @@ export class Payment extends Document {
     enum: Object.values(PaymentStatusEnum),
     default: PaymentStatusEnum.UNPAID,
   })
-  status: PaymentStatusEnum; // Đảm bảo rằng 'status' là kiểu String với enum đúng
+  status: PaymentStatusEnum;
 
   @Prop({
-    type: String,
-    enum: Object.values(PaymentMethodEnum),
+    type: [
+      {
+        paymentMethod: {
+          type: String,
+          enum: Object.values(PaymentMethodEnum),
+          required: true,
+        },
+        amount: { type: Number, required: true },
+        paymentDate: { type: String, required: true },
+      },
+    ],
   })
-  paymentMethod: PaymentMethodEnum;
-
-  @Prop()
-  paymentDate: string;
+  paymentHistory: {
+    paymentMethod: PaymentMethodEnum;
+    amount: number;
+    paymentDate: string;
+  }[];
 }
 
 export const PaymentSchema = SchemaFactory.createForClass(Payment);
+
+PaymentSchema.pre('save', function (next) {
+  if (
+    this.isModified('room') ||
+    this.isModified('services') ||
+    this.isModified('paymentHistory') ||
+    this.isModified('paidAmount')
+  ) {
+    const roomPrice = this.room?.price || 0;
+    const servicePrice =
+      this.services?.reduce((total, service) => total + service.price, 0) || 0;
+
+    // Tính toán totalAmount
+    this.totalAmount = roomPrice + servicePrice;
+
+    // Cập nhật lại paidAmount
+    if (this.paymentHistory && this.paymentHistory.length > 0) {
+      const totalPaymentHistoryAmount = this.paymentHistory.reduce(
+        (total, payment) => total + payment.amount,
+        0,
+      );
+
+      this.paidAmount = totalPaymentHistoryAmount;
+    }
+
+    // Tính toán remainingAmount
+    this.remainingAmount = this.totalAmount - this.paidAmount;
+
+    // Cập nhật trạng thái dựa trên paidAmount và remainingAmount
+    if (this.paidAmount === 0) {
+      this.status = PaymentStatusEnum.UNPAID;
+    } else if (this.remainingAmount > 0) {
+      this.status = PaymentStatusEnum.PARTIALLY_PAID;
+    } else if (this.remainingAmount === 0) {
+      this.status = PaymentStatusEnum.PAID;
+    }
+  }
+  next();
+});

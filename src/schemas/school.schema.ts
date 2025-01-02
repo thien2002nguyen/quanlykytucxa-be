@@ -29,6 +29,12 @@ export class School extends Document {
 
   @Prop({ required: true })
   timeWork: string;
+
+  @Prop({ required: true })
+  rulesAndRegulations: string;
+
+  @Prop({ required: true })
+  guidelines: string;
 }
 
 export const SchoolSchema = SchemaFactory.createForClass(School);

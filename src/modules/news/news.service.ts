@@ -79,7 +79,7 @@ export class NewsService {
 
     const query = this.newsModel
       .find(searchQuery)
-      .populate('adminId', 'userName');
+      .populate('adminId', 'userName email phoneNumber');
 
     const total = await this.newsModel.countDocuments(searchQuery);
     const news = await query.skip(skip).limit(pageLimit).sort(sortOptions);

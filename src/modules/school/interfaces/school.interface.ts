@@ -10,4 +10,6 @@ export interface School extends Document {
   address: string;
   slogan: string;
   timeWork: string;
+  rulesAndRegulations: string;
+  guidelines: string;
 }

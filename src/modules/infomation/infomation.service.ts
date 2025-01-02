@@ -87,7 +87,7 @@ export class InfomationService {
 
     const query = this.infomationModel
       .find(searchQuery)
-      .populate('adminId', 'userName');
+      .populate('adminId', 'userName email phoneNumber');
 
     const total = await this.infomationModel.countDocuments(searchQuery);
     const infomations = await query

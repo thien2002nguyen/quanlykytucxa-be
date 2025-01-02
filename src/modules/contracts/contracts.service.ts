@@ -6,11 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { isValidObjectId, Model, Types } from 'mongoose';
-import {
-  Contract,
-  ServiceInterface,
-  StatusEnum,
-} from './interfaces/contracts.interface';
+import { Contract, StatusEnum } from './interfaces/contracts.interface';
 import { CreateContractDto } from './dto/create-contract.dto';
 import { buildSearchQuery } from 'src/utils/search.utils';
 import { paginateQuery } from 'src/utils/pagination.utils';
@@ -23,10 +19,10 @@ import {
   TimeUnitEnum,
 } from '../contract-types/interfaces/contract-types.interface';
 import { Room } from '../rooms/interfaces/room.interface';
-import { ContractTerm } from '../contract-terms/interfaces/contract-terms.interface';
 import { Service } from '../services/interfaces/service.interface';
 import * as dayjs from 'dayjs';
 import { CreateServiceContractDto } from './dto/create-service-contract.dto';
+import { Payment } from '../payments/interfaces/payments.interface';
 
 @Injectable()
 export class ContractsService {
@@ -37,17 +33,15 @@ export class ContractsService {
     @InjectModel('Service') private readonly serviceModel: Model<Service>,
     @InjectModel('ContractType')
     private readonly contractTypeModel: Model<ContractType>,
-    @InjectModel('ContractTerm')
-    private readonly contractTermModel: Model<ContractTerm>,
+    @InjectModel('Payment') private readonly paymentModel: Model<Payment>,
   ) {}
 
   async createContract(
     createContractDto: CreateContractDto,
   ): Promise<Contract> {
-    const { studentCode, contractType, room, service, term } =
-      createContractDto;
+    const { studentCode, contractTypeId, roomId, services } = createContractDto;
 
-    const existingRoom = await this.roomModel.findById(room.roomId);
+    const existingRoom = await this.roomModel.findById(roomId);
     if (!existingRoom) {
       throw new BadRequestException({
         statusCode: HttpStatus.BAD_REQUEST,
@@ -66,32 +60,15 @@ export class ContractsService {
       });
     }
 
-    // Kiểm tra từng dịch vụ trong mảng service
-    for (const serviceItem of service) {
-      const existingService = await this.serviceModel.findById(
-        serviceItem.serviceId,
-      );
+    // Kiểm tra từng dịch vụ trong mảng serviceIds
+    for (const item of services) {
+      const existingService = await this.serviceModel.findById(item.serviceId);
       if (!existingService) {
         throw new BadRequestException({
           statusCode: HttpStatus.BAD_REQUEST,
           error: 'Bad Request',
-          message: `Dịch vụ với ID ${serviceItem.serviceId} không tồn tại.`,
+          message: `Dịch vụ với ID ${item} không tồn tại.`,
           messageCode: 'SERVICE_NOT_FOUND',
-        });
-      }
-    }
-
-    // Kiểm tra từng điều khoản trong mảng term
-    for (const termItem of term) {
-      const existingTerm = await this.contractTermModel.findById(
-        termItem.termId,
-      );
-      if (!existingTerm) {
-        throw new BadRequestException({
-          statusCode: HttpStatus.BAD_REQUEST,
-          error: 'Bad Request',
-          message: `Điều khoản với ID ${termItem.termId} không tồn tại.`,
-          messageCode: 'TERM_NOT_FOUND',
         });
       }
     }
@@ -117,9 +94,8 @@ export class ContractsService {
       });
     }
 
-    const existingContractType = await this.contractTypeModel.findById(
-      contractType.contractTypeId,
-    );
+    const existingContractType =
+      await this.contractTypeModel.findById(contractTypeId);
     if (!existingContractType) {
       throw new BadRequestException({
         statusCode: HttpStatus.BAD_REQUEST,
@@ -133,19 +109,23 @@ export class ContractsService {
     const currentDate = new Date();
     let endDate: Date;
 
-    if (contractType.unit === TimeUnitEnum.YEAR) {
+    if (existingContractType.unit === TimeUnitEnum.YEAR) {
       endDate = new Date(
         currentDate.setFullYear(
-          currentDate.getFullYear() + contractType.duration,
+          currentDate.getFullYear() + existingContractType.duration,
         ),
       );
-    } else if (contractType.unit === TimeUnitEnum.MONTH) {
+    } else if (existingContractType.unit === TimeUnitEnum.MONTH) {
       endDate = new Date(
-        currentDate.setMonth(currentDate.getMonth() + contractType.duration),
+        currentDate.setMonth(
+          currentDate.getMonth() + existingContractType.duration,
+        ),
       );
-    } else if (contractType.unit === TimeUnitEnum.DAY) {
+    } else if (existingContractType.unit === TimeUnitEnum.DAY) {
       endDate = new Date(
-        currentDate.setDate(currentDate.getDate() + contractType.duration),
+        currentDate.setDate(
+          currentDate.getDate() + existingContractType.duration,
+        ),
       );
     }
 
@@ -247,13 +227,12 @@ export class ContractsService {
     const query = this.contractModel
       .find(searchQuery)
       .populate({
-        path: 'room.roomId',
+        path: 'roomId',
         populate: [{ path: 'roomBlockId' }, { path: 'roomTypeId' }],
       })
-      .populate('contractType.contractTypeId')
-      .populate('term.termId')
-      .populate('adminId')
-      .populate('service.serviceId');
+      .populate('contractTypeId')
+      .populate('adminId', 'userName email phoneNumber')
+      .populate('services.serviceId');
 
     // Đếm tổng số tài liệu phù hợp
     const total = await this.contractModel.countDocuments(searchQuery);
@@ -301,13 +280,12 @@ export class ContractsService {
     const contract = await this.contractModel
       .findById(id)
       .populate({
-        path: 'room.roomId',
+        path: 'roomId',
         populate: [{ path: 'roomBlockId' }, { path: 'roomTypeId' }],
       })
-      .populate('contractType.contractTypeId')
-      .populate('term.termId')
-      .populate('adminId')
-      .populate('service.serviceId');
+      .populate('contractTypeId')
+      .populate('adminId', 'userName email phoneNumber')
+      .populate('services.serviceId');
 
     if (!contract) {
       throw new NotFoundException(`Không tìm thấy hợp đồng với ID: ${id}`);
@@ -326,18 +304,7 @@ export class ContractsService {
       await contract.save(); // Lưu thông tin đã thay đổi vào database
     }
 
-    const student = await this.studentModel.findOne({
-      studentCode: contract.studentCode,
-    });
-
-    if (!student) {
-      throw new NotFoundException(`Không tìm thấy sinh viên.`);
-    }
-
-    const dataContract = contract.toObject();
-    dataContract.studentInfomation = student;
-
-    return dataContract;
+    return contract;
   }
 
   async removeContract(id: string): Promise<ResponseInterface> {
@@ -391,7 +358,7 @@ export class ContractsService {
       throw new NotFoundException('Không tìm thấy sinh viên trong hợp đồng.');
     }
 
-    const room = await this.roomModel.findById(contract.room.roomId);
+    const room = await this.roomModel.findById(contract.roomId);
     if (!room) {
       throw new NotFoundException('Không tìm thấy phòng.');
     }
@@ -428,22 +395,26 @@ export class ContractsService {
     // Tính toán ngày hết hạn hợp đồng từ ngày bắt đầu và thời gian trong contractType
     let endDate: Date;
 
-    if (contract.contractType.unit === TimeUnitEnum.YEAR) {
+    const contractType = await this.contractTypeModel.findById(
+      contract.contractTypeId,
+    );
+
+    if (contractType.unit === TimeUnitEnum.YEAR) {
       endDate = new Date(
         new Date(startDate).setFullYear(
-          startDate.getFullYear() + contract.contractType.duration,
+          startDate.getFullYear() + contractType.duration,
         ),
       );
-    } else if (contract.contractType.unit === TimeUnitEnum.MONTH) {
+    } else if (contractType.unit === TimeUnitEnum.MONTH) {
       endDate = new Date(
         new Date(startDate).setMonth(
-          startDate.getMonth() + contract.contractType.duration,
+          startDate.getMonth() + contractType.duration,
         ),
       );
-    } else if (contract.contractType.unit === TimeUnitEnum.DAY) {
+    } else if (contractType.unit === TimeUnitEnum.DAY) {
       endDate = new Date(
         new Date(startDate).setDate(
-          startDate.getDate() + contract.contractType.duration,
+          startDate.getDate() + contractType.duration,
         ),
       );
     }
@@ -475,7 +446,7 @@ export class ContractsService {
     }
 
     // Cập nhật thông tin phòng và sinh viên
-    student.roomId = contract.room.roomId;
+    student.roomId = contract.roomId;
     await student.save();
 
     room.registeredStudents += 1;
@@ -488,7 +459,7 @@ export class ContractsService {
     contract.adminId = new Types.ObjectId(adminId);
 
     // Cập nhật trạng thái và thời gian xác nhận cho từng dịch vụ
-    contract.service = contract.service.map((serviceItem) => ({
+    contract.services = contract.services.map((serviceItem) => ({
       ...serviceItem,
       createdAt: currentDate.toISOString(),
     }));
@@ -561,7 +532,7 @@ export class ContractsService {
       throw new NotFoundException('Không tìm thấy sinh viên trong hợp đồng.');
     }
 
-    const room = await this.roomModel.findById(contract.room.roomId);
+    const room = await this.roomModel.findById(contract.roomId);
     if (!room) {
       throw new NotFoundException('Không tìm thấy phòng.');
     }
@@ -644,7 +615,7 @@ export class ContractsService {
       throw new NotFoundException('Không tìm thấy sinh viên trong hợp đồng.');
     }
 
-    const room = await this.roomModel.findById(contract.room.roomId);
+    const room = await this.roomModel.findById(contract.roomId);
     if (!room) {
       throw new NotFoundException('Không tìm thấy phòng.');
     }
@@ -691,17 +662,57 @@ export class ContractsService {
       throw new NotFoundException('Không tìm thấy hợp đồng.');
     }
 
-    const { serviceId, name, price } = createServiceDto;
+    const { serviceId } = createServiceDto;
 
-    // Thêm dịch vụ services
-    const servicesToAdd: ServiceInterface = {
-      serviceId,
-      name,
-      price,
-      createdAt: new Date().toISOString(),
-    };
-    contract.service.push(servicesToAdd);
-    await contract.save();
+    const service = await this.serviceModel.findById(serviceId);
+    if (!service) {
+      throw new NotFoundException('Không tìm thấy dịch vụ.');
+    }
+
+    const startOfMonth = dayjs().startOf('month').toISOString(); // Đầu tháng
+    const endOfMonth = dayjs().endOf('month').toISOString(); // Cuối tháng
+
+    // Tìm hóa đơn trong tháng hiện tại
+    const existingPayment = await this.paymentModel.findOne({
+      contractId: new Types.ObjectId(contractId),
+      createdAt: {
+        $gte: startOfMonth,
+        $lte: endOfMonth,
+      },
+    });
+
+    // Nếu đã có hóa đơn trong tháng
+    if (existingPayment) {
+      // Kiểm tra nếu dịch vụ đã tồn tại trong hóa đơn
+      const isServiceInPayment = existingPayment.services.some(
+        (service) => String(service.serviceId) === String(serviceId),
+      );
+
+      if (!isServiceInPayment) {
+        // Thêm dịch vụ vào hóa đơn
+        existingPayment.services.push({
+          serviceId: new Types.ObjectId(service._id as string),
+          name: service.name,
+          price: service.price,
+          createdAt: new Date().toISOString(),
+        });
+        await existingPayment.save();
+      }
+    }
+
+    // Kiểm tra nếu dịch vụ đã tồn tại trong danh sách hợp đồng
+    const isServiceInContract = contract.services.some(
+      (service) => String(service.serviceId) === String(serviceId),
+    );
+
+    if (!isServiceInContract) {
+      // Thêm dịch vụ vào hợp đồng
+      contract.services.push({
+        serviceId: new Types.ObjectId(service._id as string),
+        createdAt: new Date().toISOString(),
+      });
+      await contract.save();
+    }
 
     return contract;
   }
@@ -712,7 +723,7 @@ export class ContractsService {
       throw new NotFoundException('Không tìm thấy hợp đồng.');
     }
 
-    const serviceIndex = contract.service.findIndex(
+    const serviceIndex = contract.services.findIndex(
       (service) => String(service.serviceId) === serviceId,
     );
 
@@ -721,7 +732,7 @@ export class ContractsService {
     }
 
     // Xóa dịch vụ khỏi danh sách
-    contract.service.splice(serviceIndex, 1);
+    contract.services.splice(serviceIndex, 1);
     await contract.save();
 
     return contract;

@@ -24,7 +24,7 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   // Lấy port từ biến môi trường
-  const port = configService.get<number>('PORT') || 3000;
+  const port = configService.get<number>('PORT') || 8888;
 
   await app.listen(port);
   console.log(`Ứng dụng đang chạy: http://localhost:${port}/docs`);
