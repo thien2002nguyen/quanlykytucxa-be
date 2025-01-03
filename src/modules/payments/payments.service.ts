@@ -305,6 +305,8 @@ export class PaymentsService {
       searchQuery.status = PaymentStatusEnum.PAID;
     } else if (filter === PaymentStatusEnum.UNPAID) {
       searchQuery.status = PaymentStatusEnum.UNPAID;
+    } else if (filter === PaymentStatusEnum.PARTIALLY_PAID) {
+      searchQuery.status = PaymentStatusEnum.PARTIALLY_PAID;
     }
 
     // Tùy chọn sắp xếp
