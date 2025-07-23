@@ -10,10 +10,7 @@ async function bootstrap() {
   // Cấu hình Swagger từ tệp riêng
   setupSwagger(app);
 
-  app.enableCors({
-    origin: 'https://dau-kytucxa.name.vn',
-    credentials: true,
-  }); // <- cho phép CORS
+  app.enableCors(); // <- cho phép CORS
 
   app.useGlobalPipes(
     new ValidationPipe({
