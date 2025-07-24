@@ -10,7 +10,10 @@ async function bootstrap() {
   // Cấu hình Swagger từ tệp riêng
   setupSwagger(app);
 
-  app.enableCors(); // <- cho phép CORS
+  app.enableCors({
+    origin: 'https://dau-kytucxa.io.vn',
+  });
+  // <- cho phép CORS
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -26,7 +29,7 @@ async function bootstrap() {
   // Lấy port từ biến môi trường
   const port = configService.get<number>('PORT') || 8888;
 
-  await app.listen(port);
+  await app.listen(port, '127.0.0.1');
   console.log(`Ứng dụng đang chạy: http://localhost:${port}/docs`);
 }
 
