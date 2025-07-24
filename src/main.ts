@@ -29,7 +29,7 @@ async function bootstrap() {
   // Lấy port từ biến môi trường
   const port = configService.get<number>('PORT') || 8888;
 
-  await app.listen(port, '127.0.0.1');
+  await app.listen(port, '0.0.0.0');
   console.log(`Ứng dụng đang chạy: http://localhost:${port}/docs`);
 }
 
