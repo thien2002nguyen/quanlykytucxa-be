@@ -11,7 +11,7 @@ async function bootstrap() {
   setupSwagger(app);
 
   app.enableCors({
-    origin: 'https://dau-kytucxa.io.vn',
+    origin: '*',
   });
   // <- cho phép CORS
 
